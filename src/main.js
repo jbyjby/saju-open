@@ -59,16 +59,84 @@ function pillarCard(pillar, key) {
   </article>`
 }
 
+const fortuneAreaLabels = {
+  career: '직업·일', wealth: '재물·계약', spouse: '배우자·연애', relationship: '관계·변화', wellbeing: '생활 리듬',
+}
+
+function fortuneAreaCards(areas) {
+  return Object.entries(areas).map(([key, body]) => `<article><h5>${fortuneAreaLabels[key]}</h5><p>${body}</p></article>`).join('')
+}
+
+function renderAnnualDetail(explorer, annual) {
+  explorer.querySelectorAll('[data-annual]').forEach(button => {
+    const selected = Number(button.dataset.annual) === annual.year
+    button.classList.toggle('active', selected)
+    button.setAttribute('aria-selected', String(selected))
+  })
+  explorer.querySelector('[data-testid="annual-detail"]').innerHTML = `
+    <div class="annual-head"><p>${annual.age}세 · ${annual.ganZhi} 세운</p><h4>${annual.reading.title}</h4></div>
+    <p class="annual-summary">${annual.reading.summary}</p>
+    <div class="fortune-signals">${annual.reading.signals.map(signal => `<span>${signal}</span>`).join('')}</div>
+    <div class="fortune-areas annual-areas">${fortuneAreaCards(annual.reading.areas)}</div>`
+}
+
+function renderCycleDetail(explorer, data, cycleIndex) {
+  const cycle = data.luckCycles[cycleIndex]
+  explorer.dataset.cycle = String(cycleIndex)
+  explorer.querySelectorAll('[data-cycle]').forEach(button => {
+    const selected = Number(button.dataset.cycle) === cycleIndex
+    button.classList.toggle('active', selected)
+    button.setAttribute('aria-selected', String(selected))
+  })
+  explorer.querySelector('[data-cycle-panel]').innerHTML = `
+    <article class="cycle-detail" data-testid="cycle-detail">
+      <header><p>${cycle.startAge}–${cycle.endAge}세 · ${cycle.startYear}–${cycle.endYear}</p><h3>${cycle.ganZhi} 대운 · ${cycle.reading.title}</h3></header>
+      <p class="cycle-body">${cycle.reading.body}</p>
+      <div class="fortune-signals">${cycle.reading.signals.map(signal => `<span>${signal}</span>`).join('')}</div>
+      <div class="fortune-areas">${fortuneAreaCards(cycle.reading.areas)}</div>
+      <div class="annual-section">
+        <div class="annual-title"><p>해마다 달라지는 흐름</p><h4>세운을 선택하세요</h4></div>
+        <div class="annual-tabs" role="tablist" aria-label="세운 선택">${cycle.annualYears.map(annual => `<button type="button" role="tab" data-annual="${annual.year}" aria-label="${annual.year}년 ${annual.ganZhi} 세운"><b>${annual.year}</b><span>${annual.ganZhi}</span><small>${annual.age}세</small></button>`).join('')}</div>
+        <div class="annual-detail" data-testid="annual-detail"></div>
+      </div>
+    </article>`
+  const currentYear = new Date().getFullYear()
+  const initialAnnual = cycle.annualYears.find(annual => annual.year === currentYear) || cycle.annualYears[0]
+  renderAnnualDetail(explorer, initialAnnual)
+}
+
+function setupLuckExplorer(data) {
+  const explorer = result.querySelector('[data-luck-explorer]')
+  const currentYear = new Date().getFullYear()
+  const initialCycle = Math.max(0, data.luckCycles.findIndex(cycle => currentYear >= cycle.startYear && currentYear <= cycle.endYear))
+  explorer.addEventListener('click', event => {
+    const cycleButton = event.target.closest('[data-cycle]')
+    if (cycleButton) {
+      renderCycleDetail(explorer, data, Number(cycleButton.dataset.cycle))
+      return
+    }
+    const annualButton = event.target.closest('[data-annual]')
+    if (annualButton) {
+      const cycle = data.luckCycles[Number(explorer.dataset.cycle)]
+      const annual = cycle.annualYears.find(item => item.year === Number(annualButton.dataset.annual))
+      renderAnnualDetail(explorer, annual)
+    }
+  })
+  renderCycleDetail(explorer, data, initialCycle)
+}
+
 function renderResult(data, timeUnknown) {
   const pillars = Object.entries(data.pillars).map(([key, value]) => pillarCard(value, key)).join('')
   const balance = Object.entries(data.balance).map(([key, count]) => `<div class="balance-item"><div class="balance-label"><span>${elementLabel(key)}</span><b>${count}</b></div><div class="bar"><i class="element-bg-${key}" style="width:${count * 12.5}%"></i></div></div>`).join('')
   const missing = data.interpretation.missing.length
     ? data.interpretation.missing.map(item => `${ELEMENTS[item.key].ko}(${ELEMENTS[item.key].hanja})`).join(', ')
     : '없음'
-  const cycles = data.luckCycles.map(cycle => `<li><b>${cycle.ganZhi}</b><span>${cycle.startAge}–${cycle.endAge}세</span></li>`).join('')
+  const cycleTabs = data.luckCycles.map((cycle, index) => `<button type="button" role="tab" data-cycle="${index}" aria-label="${cycle.ganZhi} 대운 ${cycle.startYear}년부터 ${cycle.endYear}년"><b>${cycle.ganZhi}</b><span>${cycle.startYear}–${cycle.endYear}</span><small>${cycle.startAge}–${cycle.endAge}세</small></button>`).join('')
   const readingLabels = {
     overall: ['전체 흐름', '總運'], personality: ['성향과 강점', '性向'], career: ['직업과 일', '職業'],
-    wealth: ['재물과 관리', '財物'], relationship: ['관계와 소통', '關係'], wellbeing: ['생활 리듬', '健康'],
+    wealth: ['재물과 관리', '財物'], spouse: ['배우자와 결혼', '配偶'], family: ['가족과 원가족', '家族'],
+    children: ['자녀와 후배', '子女'], study: ['학업과 자격', '學業'],
+    relationship: ['관계와 소통', '關係'], wellbeing: ['생활 리듬', '健康'],
   }
   const deepReadings = Object.entries(data.interpretation.readings).map(([key, reading], index) => `
     <article class="deep-reading ${key === 'overall' ? 'featured' : ''}">
@@ -113,10 +181,11 @@ function renderResult(data, timeUnknown) {
       </article>
     </div>
     <p class="interpretation-note">${data.interpretation.note}</p>
-    <div class="luck">
-      <div><p>10년의 흐름</p><h3>대운</h3><small>대운은 사건을 예언하는 값이 아니라 시기별 흐름을 살피는 전통적 틀입니다.</small></div>
-      <ol>${cycles}</ol>
-    </div>
+    <section class="luck-explorer" data-luck-explorer data-testid="luck-explorer" aria-labelledby="luck-title">
+      <header class="luck-explorer-head"><p>10년과 1년의 흐름</p><h2 id="luck-title">대운·세운 상세 풀이</h2><span>대운을 고른 뒤 세운을 누르면 해당 연도의 직업·재물·배우자·관계·생활 흐름을 볼 수 있습니다.</span></header>
+      <div class="cycle-tabs" role="tablist" aria-label="대운 선택">${cycleTabs}</div>
+      <div data-cycle-panel></div>
+    </section>
     <div class="calculation-receipt">
       <h3>이번 계산의 영수증</h3>
       <dl>
@@ -128,6 +197,7 @@ function renderResult(data, timeUnknown) {
       </dl>
     </div>`
   result.hidden = false
+  setupLuckExplorer(data)
   result.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' })
 }
 

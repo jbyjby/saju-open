@@ -112,6 +112,41 @@ legend { margin-bottom: 10px; color: var(--muted); font-size: 13px; }
 .bar { height: 4px; background: #44443f; }.bar i { display: block; height: 100%; }
 .balance-note { font-size: 13px; color: #aaa69c; }
 .interpretation-note { max-width: 780px; margin: 20px 0 70px; color: #aaa69c; font-size: 13px; }
+.luck-explorer { padding: 70px 0 20px; border-top: 1px solid #56554f; }
+.luck-explorer-head { display: grid; grid-template-columns: 1fr 1.3fr; gap: 12px 50px; align-items: end; }
+.luck-explorer-head > p { grid-column: 1 / -1; margin: 0; color: #d88c78; font-size: 12px; letter-spacing: .12em; }
+.luck-explorer-head h2 { margin: 0; font: 400 clamp(38px, 5vw, 60px)/1.1 var(--serif); letter-spacing: -.04em; }
+.luck-explorer-head > span { max-width: 560px; color: #aaa69c; font-size: 13px; }
+.cycle-tabs { display: grid; grid-template-columns: repeat(8, minmax(118px, 1fr)); margin: 40px 0 0; overflow-x: auto; border: 1px solid #56554f; }
+.cycle-tabs button { min-width: 118px; min-height: 104px; padding: 16px 12px; display: flex; flex-direction: column; align-items: flex-start; border: 0; border-right: 1px solid #56554f; background: transparent; color: #bdb9af; cursor: pointer; }
+.cycle-tabs button:last-child { border-right: 0; }
+.cycle-tabs button b { font: 400 25px/1.2 var(--serif); color: var(--paper); }
+.cycle-tabs button span { margin-top: auto; font-size: 11px; }
+.cycle-tabs button small { color: #817f78; }
+.cycle-tabs button:hover, .cycle-tabs button.active { background: #393832; }
+.cycle-tabs button.active { box-shadow: inset 0 -3px #d88c78; }
+.cycle-detail { padding: 48px 0 0; }
+.cycle-detail > header p, .annual-head p, .annual-title p { margin: 0 0 8px; color: #d88c78; font-size: 12px; letter-spacing: .08em; }
+.cycle-detail > header h3 { max-width: 900px; margin: 0; font: 400 clamp(29px, 4vw, 43px)/1.3 var(--serif); }
+.cycle-body { max-width: 920px; margin: 22px 0 0; color: #c6c2b8; line-height: 1.9; word-break: keep-all; }
+.fortune-signals { display: flex; flex-wrap: wrap; gap: 8px; margin: 24px 0 32px; }
+.fortune-signals span { padding: 7px 12px; border: 1px solid #56554f; color: #b6b2a9; font-size: 11px; }
+.fortune-areas { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid #56554f; border-left: 1px solid #56554f; }
+.fortune-areas article { min-width: 0; padding: 28px; border-right: 1px solid #56554f; border-bottom: 1px solid #56554f; }
+.fortune-areas article:last-child { grid-column: 1 / -1; }
+.fortune-areas h5 { margin: 0 0 12px; color: #d88c78; font: 400 18px/1.3 var(--serif); }
+.fortune-areas p { margin: 0; color: #aaa69c; font-size: 13px; line-height: 1.8; }
+.annual-section { margin-top: 70px; padding-top: 45px; border-top: 1px solid #56554f; }
+.annual-title h4 { margin: 0 0 24px; font: 400 28px/1.3 var(--serif); }
+.annual-tabs { display: grid; grid-template-columns: repeat(10, minmax(84px, 1fr)); overflow-x: auto; border: 1px solid #56554f; }
+.annual-tabs button { min-width: 84px; min-height: 88px; padding: 12px 10px; display: flex; flex-direction: column; align-items: flex-start; border: 0; border-right: 1px solid #56554f; background: transparent; color: #aaa69c; cursor: pointer; }
+.annual-tabs button:last-child { border-right: 0; }
+.annual-tabs button b { font-weight: 400; color: var(--paper); }.annual-tabs button span { font-family: var(--serif); font-size: 17px; }.annual-tabs button small { margin-top: auto; color: #817f78; }
+.annual-tabs button:hover, .annual-tabs button.active { background: #393832; }.annual-tabs button.active { box-shadow: inset 0 -3px #d88c78; }
+.annual-detail { padding: 44px 34px; background: #302f2a; }
+.annual-head h4 { margin: 0; font: 400 clamp(25px, 3vw, 34px)/1.35 var(--serif); }
+.annual-summary { max-width: 900px; margin: 18px 0 0; color: #c6c2b8; line-height: 1.9; }
+.annual-areas { border-color: #4c4b45; }.annual-areas article { border-color: #4c4b45; }
 .luck { padding: 40px 0; display: grid; grid-template-columns: 280px 1fr; gap: 50px; border-top: 1px solid #56554f; border-bottom: 1px solid #56554f; }
 .luck small { color: #99968f; }
 .luck ol { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; margin: 0; padding: 0; list-style: none; background: #56554f; }
@@ -155,6 +190,15 @@ footer p { margin: 0; max-width: 740px; }
   .deep-reading-copy > p { line-height: 1.8; word-break: normal; }
   .reading-basis { margin-top: 65px; }
   .reading-grid { grid-template-columns: 1fr; }.reading-card, .reading-card:nth-child(odd), .reading-card:nth-child(even), .reading-card.dominant { grid-column: auto; padding: 30px 0; border-right: 0; }
+  .luck-explorer-head { grid-template-columns: 1fr; }
+  .luck-explorer-head > p { grid-column: auto; }
+  .cycle-tabs { grid-template-columns: repeat(8, 112px); }
+  .cycle-body { word-break: normal; }
+  .fortune-areas { grid-template-columns: 1fr; }
+  .fortune-areas article:last-child { grid-column: auto; }
+  .annual-tabs { grid-template-columns: repeat(10, 82px); }
+  .annual-detail { padding: 32px 18px; }
+  .annual-summary { line-height: 1.8; }
   .luck { grid-template-columns: 1fr; gap: 25px; }.luck ol { grid-template-columns: 1fr 1fr; }
   .calculation-receipt { padding: 22px 18px; }.calculation-receipt dl div { grid-template-columns: 1fr; gap: 2px; }
   .source-list article { grid-template-columns: 42px 1fr; }.research-grid { grid-template-columns: 1fr; }

@@ -68,7 +68,8 @@ describe('해석 규칙', () => {
       hour: 0, minute: 32, gender: 'male',
     })
     expect(Object.keys(result.interpretation.readings)).toEqual([
-      'overall', 'personality', 'career', 'wealth', 'relationship', 'wellbeing',
+      'overall', 'personality', 'career', 'wealth', 'spouse',
+      'family', 'children', 'study', 'relationship', 'wellbeing',
     ])
     for (const reading of Object.values(result.interpretation.readings)) {
       expect(reading.title.length).toBeGreaterThan(2)
@@ -77,5 +78,26 @@ describe('해석 규칙', () => {
     }
     expect(result.interpretation.careerRoles.length).toBeGreaterThanOrEqual(4)
     expect(Object.values(result.interpretation.tenGodBalance).reduce((a, b) => a + b, 0)).toBe(7)
+  })
+
+  it('대운마다 10개 세운과 영역별 상세 풀이를 만든다', () => {
+    const result = calculateSaju({
+      calendar: 'solar', year: 1986, month: 5, day: 29,
+      hour: 0, minute: 32, gender: 'male',
+    })
+    expect(result.luckCycles).toHaveLength(8)
+    expect(result.luckCycles[0]).toMatchObject({
+      ganZhi: '甲午', startYear: 1989, endYear: 1998, startAge: 4, endAge: 13,
+    })
+    expect(result.luckCycles[0].annualYears).toHaveLength(10)
+    expect(result.luckCycles[0].annualYears[0]).toMatchObject({ year: 1989, age: 4, ganZhi: '己巳' })
+    for (const cycle of result.luckCycles) {
+      expect(cycle.reading.body.length).toBeGreaterThan(120)
+      expect(Object.keys(cycle.reading.areas)).toEqual(['career', 'wealth', 'spouse', 'relationship', 'wellbeing'])
+      for (const annual of cycle.annualYears) {
+        expect(annual.reading.summary.length).toBeGreaterThan(60)
+        expect(Object.keys(annual.reading.areas)).toEqual(['career', 'wealth', 'spouse', 'relationship', 'wellbeing'])
+      }
+    }
   })
 })

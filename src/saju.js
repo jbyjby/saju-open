@@ -171,7 +171,7 @@ function directPillarData(ganZhi, label, dayStem, libraryPillar) {
   }
 }
 
-function buildInterpretation(pillars, balance) {
+function buildInterpretation(pillars, balance, gender) {
   const dayStem = pillars.day.stem
   const dayElement = STEM_ELEMENT[dayStem]
   const sorted = Object.entries(balance).sort((a, b) => b[1] - a[1])
@@ -195,6 +195,9 @@ function buildInterpretation(pillars, balance) {
   const authorityCount = groupBalance.authority
   const resourceCount = groupBalance.resource
   const outputCount = groupBalance.output
+  const spouseGroupKey = gender === 'male' ? 'wealth' : 'authority'
+  const spouseCount = groupBalance[spouseGroupKey]
+  const spouseGroup = TEN_GOD_GROUPS[spouseGroupKey]
 
   const readings = {
     overall: {
@@ -217,6 +220,26 @@ function buildInterpretation(pillars, balance) {
       body: wealthCount ? `재성과 연결되는 글자가 ${wealthCount}개 보여 현실 자원과 성과를 의식하는 흐름이 있습니다. 다만 재성이 있다는 사실이 재산의 크기나 투자 성공을 보장하지는 않습니다. ${primaryGroup.caution} 수입을 늘리는 판단과 지출을 지키는 판단을 분리하고, 큰 결정은 감정이 가라앉은 뒤 예산·기간·최악의 경우를 적어 보는 방식이 이 명식의 실행력을 안정적으로 살립니다.` : `표면 십신에서 재성이 두드러지지 않는다고 재물운이 없다는 뜻은 아닙니다. 돈보다 의미·관계·전문성을 먼저 보는 경향이 있을 수 있으므로, 수입과 지출을 자동으로 기록하고 큰 결제에는 하루의 간격을 두는 식의 외부 기준이 도움이 됩니다. 재무 결정은 사주가 아니라 실제 소득, 부채, 위험 감수 범위를 기준으로 해야 합니다.`,
       points: [`재성 표면 개수: ${wealthCount}`, '실천: 고정비·변동비·성장비를 나누어 기록하기', '주의: 투자·대출 판단을 사주 해석에 맡기지 않기'],
     },
+    spouse: {
+      title: spouseCount ? '배우자 관계는 현실적인 약속을 나눌 때 깊어집니다' : '배우자 인연은 운보다 관계의 기준을 세우는 일이 먼저입니다',
+      body: `전통 명리에서는 입력한 성별을 기준으로 ${gender === 'male' ? '재성' : '관성'}을 배우자 흐름의 한 단서로 보며, 이 명식의 표면 분포에는 관련 흐름이 ${spouseCount}개 있습니다. ${spouseCount ? `${spouseGroup.strength}이 관계 안에서도 중요하게 작동할 수 있습니다.` : '표면에 해당 십신이 적다고 결혼이나 인연이 없다는 뜻은 아닙니다.'} 배우자의 성격·직업·만남 시기를 확정하는 방식보다, 갈등 때 대화가 가능한지, 돈과 생활을 어떻게 나눌지, 서로의 독립성을 존중하는지를 실제 관계에서 확인하는 편이 훨씬 중요합니다.`,
+      points: [`전통적 배우자 별: ${gender === 'male' ? '재성' : '관성'} · 표면 ${spouseCount}`, '관계 점검: 애정 표현·경제 분담·가족 경계에 관한 기준 말하기', '주의: 특정 연도에 결혼이나 이별이 확정된다고 해석하지 않기'],
+    },
+    family: {
+      title: '가족 안에서는 책임과 자기 경계를 함께 세워야 합니다',
+      body: `가족 관계는 연주와 월주만으로 단정할 수 없지만, 인성 ${resourceCount}과 비겁 ${selfCount}의 배치는 돌봄을 받는 방식과 가족 안에서 자기 몫을 정하는 태도를 돌아보게 합니다. ${resourceCount >= selfCount ? '가족의 조언과 기대를 중요하게 받아들이는 편이라, 자신의 선택을 설명하는 과정이 길어질 수 있습니다.' : '스스로 해결하려는 힘이 강해 가족에게 도움을 요청하는 시점이 늦어질 수 있습니다.'} 가까운 사이라도 책임의 범위, 돈, 돌봄, 연락 빈도를 구체적으로 합의하는 것이 관계를 안정시키는 데 도움이 됩니다.`,
+      points: ['부모·원가족: 기대와 실제로 가능한 역할을 구분하기', '형제·친족: 비교보다 각자의 조건과 경계를 확인하기', '가족 결정: 죄책감이 아니라 지속 가능한 책임을 기준으로 삼기'],
+    },
+    children: {
+      title: '자녀와 후배에게는 답보다 성장할 공간을 건네는 편입니다',
+      body: `식상 흐름 ${outputCount}은 표현, 생산, 가르침과 연결해 읽을 수 있습니다. 이것만으로 자녀의 유무나 수를 판단할 수는 없지만, 자녀·학생·후배를 대할 때 자신의 경험을 어떻게 전달하는지 살펴보는 단서가 됩니다. ${outputCount ? '설명하고 결과물을 함께 만드는 방식이 강점이 될 수 있으나, 상대가 스스로 시행착오를 겪을 여지도 남겨 두는 것이 좋습니다.' : '말로 가르치기보다 안정적인 환경과 일관된 태도로 보여 주는 방식이 편할 수 있습니다.'} 실제 양육과 교육에서는 발달 단계와 개인차를 우선해야 합니다.`,
+      points: [`식상 표면 개수: ${outputCount}`, '양육·지도: 지시보다 선택지와 이유를 함께 제시하기', '주의: 자녀의 운명·성취·건강을 부모 사주로 단정하지 않기'],
+    },
+    study: {
+      title: resourceCount ? '깊이 이해한 내용을 자기 언어로 바꿀 때 학습이 오래갑니다' : '학습은 짧은 실행과 반복으로 구조를 만들어야 합니다',
+      body: `인성 흐름 ${resourceCount}은 정보를 받아들이고 체계화하는 방식과 연결됩니다. ${resourceCount ? '자료를 충분히 읽고 맥락을 이해한 뒤 정리하는 능력이 강점이지만, 완벽히 이해할 때까지 시작을 미루지 않도록 출력 기한을 정하는 편이 좋습니다.' : '정보를 오래 붙들기보다 문제를 풀거나 누군가에게 설명하면서 이해를 만드는 방식이 효과적일 수 있습니다.'} 시험·자격·연구 과제에서는 목표 점수, 반복 주기, 피드백 방법을 구체화하면 사주의 추상적 조언을 실제 학습 전략으로 바꿀 수 있습니다.`,
+      points: [`인성 표면 개수: ${resourceCount}`, '추천 방식: 입력→요약→적용 문제→설명의 네 단계로 공부하기', '실천: 주간 단위로 결과물을 남기고 다음 계획을 조정하기'],
+    },
     relationship: {
       title: '가까운 사이일수록 기대와 경계를 말로 확인하세요',
       body: `비겁 흐름 ${selfCount}, 관성 흐름 ${authorityCount}의 조합은 관계에서 자율성과 책임을 어떻게 나누는지가 중요하다는 뜻으로 읽을 수 있습니다. ${selfCount >= authorityCount ? '자기 방식과 속도를 존중받을 때 편안하지만, 상대에게도 같은 선택권을 남겨 두어야 합니다.' : '약속과 역할을 중요하게 여기지만, 기준을 맞추는 과정에서 자신의 욕구를 뒤로 미루지 않는 것이 필요합니다.'} 마음을 알아주길 기다리기보다 원하는 도움, 어려운 점, 가능한 범위를 구체적으로 말할수록 관계의 오해가 줄어듭니다.`,
@@ -235,6 +258,73 @@ function buildInterpretation(pillars, balance) {
     missing: missing.map(key => ({ key, ...ELEMENT_COPY[key] })),
     tenGodBalance, groupBalance, careerRoles, readings,
     note: '이 해석은 일간·표면 오행·십신의 주기운을 조합한 입문용 참고입니다. 좋고 나쁨을 단정하거나 미래 사건을 예언하지 않습니다.',
+  }
+}
+
+const BRANCH_CLASHES = [['子', '午'], ['丑', '未'], ['寅', '申'], ['卯', '酉'], ['辰', '戌'], ['巳', '亥']]
+const BRANCH_COMBINES = [['子', '丑'], ['寅', '亥'], ['卯', '戌'], ['辰', '酉'], ['巳', '申'], ['午', '未']]
+
+function branchRelations(branch, otherBranches) {
+  const clashes = otherBranches.filter(other => BRANCH_CLASHES.some(pair => pair.includes(branch) && pair.includes(other)))
+  const combines = otherBranches.filter(other => BRANCH_COMBINES.some(pair => pair.includes(branch) && pair.includes(other)))
+  const labels = []
+  if (combines.length) labels.push(`${branch}가 원국의 ${[...new Set(combines)].join('·')}와 합`)
+  if (clashes.length) labels.push(`${branch}가 원국의 ${[...new Set(clashes)].join('·')}와 충`)
+  return labels.length ? labels.join(', ') : `${branch}와 원국 지지 사이에 직접적인 육합·충이 두드러지지 않음`
+}
+
+function fortuneSignals(pillars, ganZhi, gender) {
+  const [stem, branch] = [...ganZhi]
+  const dayStem = pillars.day.stem
+  const stemGod = getTenGod(dayStem, stem)
+  const branchGod = getTenGod(dayStem, BRANCH_MAIN_STEM[branch])
+  const mainGroupKey = tenGodGroup(stemGod)
+  const branchGroupKey = tenGodGroup(branchGod)
+  const spouseGroupKey = gender === 'male' ? 'wealth' : 'authority'
+  return {
+    stem, branch, stemGod, branchGod, mainGroupKey, branchGroupKey, spouseGroupKey,
+    mainGroup: TEN_GOD_GROUPS[mainGroupKey], branchGroup: TEN_GOD_GROUPS[branchGroupKey],
+    relation: branchRelations(branch, Object.values(pillars).map(p => p.branch)),
+    spouseActive: mainGroupKey === spouseGroupKey || branchGroupKey === spouseGroupKey,
+  }
+}
+
+function luckAreas(signal, periodLabel) {
+  const spouseText = signal.spouseActive
+    ? `${periodLabel}에는 전통적 배우자 별이 운에서 드러납니다. 만남이나 혼인 자체를 확정하기보다, 관계의 현실 조건과 약속을 구체적으로 점검하기 좋은 시기로 읽습니다.`
+    : `${periodLabel}의 중심 십신은 배우자 별과 직접 겹치지 않습니다. 관계운이 없다는 뜻이 아니라 일·학습·자기 과제가 앞에 놓일 수 있으므로, 가까운 관계를 일정에서 의도적으로 돌보는 편이 좋습니다.`
+  return {
+    career: `${signal.stemGod}과 ${signal.branchGod}의 조합은 ${signal.mainGroup.strength}을 일에서 요구합니다. 새 역할은 직함보다 책임 범위, 평가 기준, 협업 구조를 확인하고 선택해야 이 운의 장점을 실제 경력으로 연결할 수 있습니다.`,
+    wealth: `${periodLabel}의 재물 흐름은 ${signal.mainGroupKey === 'wealth' || signal.branchGroupKey === 'wealth' ? '성과와 자원 관리가 전면에 놓이는 편' : '주된 활동을 재무 결과로 바꾸는 별도 장치가 필요한 편'}입니다. 수입·지출·부채·비상금을 분리하고, 큰 계약과 투자는 사주보다 실제 숫자와 전문가 검토를 우선해야 합니다.`,
+    spouse: spouseText,
+    relationship: `${signal.relation}. 합은 무조건 좋은 사건, 충은 무조건 나쁜 사건이 아니라 관계 방식과 환경이 재조정되는 신호로 봅니다. 이 시기에는 기대, 역할, 연락, 돈의 경계를 말로 확인해야 오해를 줄일 수 있습니다.`,
+    wellbeing: `${signal.mainGroup.caution} 일정이 몰릴 때 수면·식사·활동 기록으로 자신의 리듬을 확인하세요. 이 풀이는 질병을 예측하거나 진단하지 않으며, 지속되는 증상은 의료 전문가의 평가를 따라야 합니다.`,
+  }
+}
+
+function buildCycleReading(pillars, ganZhi, startYear, endYear, gender) {
+  const signal = fortuneSignals(pillars, ganZhi, gender)
+  const periodLabel = `${startYear}~${endYear}년 ${ganZhi} 대운`
+  return {
+    title: `${signal.mainGroup.label}이 10년의 앞줄에 놓이는 시기`,
+    body: `${periodLabel}의 천간 ${signal.stem}은 ${signal.stemGod}, 지지 ${signal.branch}의 주기운은 ${signal.branchGod}으로 읽습니다. 따라서 ${signal.mainGroup.strength}과 ${signal.branchGroup.strength}이 함께 주요 과제가 됩니다. ${signal.relation}. 이 관계는 특정 사건의 발생을 보장하지 않으며, 10년 동안 어떤 역할과 선택이 반복해서 중요해질 수 있는지를 보여 주는 참고 틀입니다. 기회가 보일 때는 실제 조건을 확인하고, 변동이 클 때는 생활 기반과 관계의 합의를 먼저 정비하는 방식으로 활용하세요.`,
+    signals: [`천간 ${signal.stem} · ${signal.stemGod}`, `지지 ${signal.branch} · ${signal.branchGod}`, signal.relation],
+    areas: luckAreas(signal, periodLabel),
+  }
+}
+
+function buildAnnualReading(pillars, cycleGanZhi, year, age, ganZhi, gender) {
+  const signal = fortuneSignals(pillars, ganZhi, gender)
+  const cycleSignal = fortuneSignals(pillars, cycleGanZhi, gender)
+  const cycleLink = signal.mainGroupKey === cycleSignal.mainGroupKey
+    ? `대운과 세운이 모두 ${signal.mainGroup.label}을 강조해 같은 주제가 반복될 수 있습니다.`
+    : `대운의 ${cycleSignal.mainGroup.label} 위에 세운의 ${signal.mainGroup.label}이 더해져 두 과제를 함께 조율해야 합니다.`
+  const periodLabel = `${year}년 ${ganZhi} 세운`
+  return {
+    title: `${year}년 · ${signal.mainGroup.label}을 구체적인 선택으로 옮기는 해`,
+    summary: `${periodLabel}은 천간 ${signal.stemGod}, 지지의 주기운 ${signal.branchGod}으로 읽습니다. ${cycleLink} ${signal.relation}. 사건을 단정하기보다 그해의 결정에서 무엇을 점검할지 보여 주는 참고로 활용하세요.`,
+    signals: [`나이 ${age}세`, `세운 ${ganZhi}`, `대운 ${cycleGanZhi}`, `${signal.stemGod}·${signal.branchGod}`],
+    areas: luckAreas(signal, periodLabel),
   }
 }
 
@@ -277,12 +367,27 @@ export function calculateSaju(input) {
   }
   const balance = getElementBalance(Object.values(pillars).map(p => p.ganZhi))
   const yun = eightChar.getYun(gender === 'male' ? 1 : 0)
-  const luckCycles = yun.getDaYun(9).slice(1).map(item => ({
-    ganZhi: item.getGanZhi(), startAge: item.getStartAge(), endAge: item.getEndAge(),
-  }))
+  const luckCycles = yun.getDaYun(9).slice(1).map(item => {
+    const ganZhi = item.getGanZhi()
+    const startYear = item.getStartYear()
+    const endYear = item.getEndYear()
+    const annualYears = item.getLiuNian(10).map(annual => {
+      const annualGanZhi = annual.getGanZhi()
+      const annualYear = annual.getYear()
+      const age = annual.getAge()
+      return {
+        year: annualYear, age, ganZhi: annualGanZhi,
+        reading: buildAnnualReading(pillars, ganZhi, annualYear, age, annualGanZhi, gender),
+      }
+    })
+    return {
+      ganZhi, startYear, endYear, startAge: item.getStartAge(), endAge: item.getEndAge(),
+      reading: buildCycleReading(pillars, ganZhi, startYear, endYear, gender), annualYears,
+    }
+  })
   return {
     entered, solarDate, corrected, timeZone: getKoreanOffsetLabel(year, month, day, hour, minute),
     lunarText: lunar.toString(), pillars, balance, luckCycles,
-    interpretation: buildInterpretation(pillars, balance),
+    interpretation: buildInterpretation(pillars, balance, gender),
   }
 }
