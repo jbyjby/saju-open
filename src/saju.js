@@ -41,6 +41,45 @@ const ELEMENT_COPY = {
   water: { strength: '탐구하고 연결하는 힘', work: ['연구·개발', '언어·미디어', '유통·여행'], caution: '생각이 길어질 때 작은 실행 단위를 정해 보세요.' },
 }
 
+const BRANCH_MAIN_STEM = { 子: '癸', 丑: '己', 寅: '甲', 卯: '乙', 辰: '戊', 巳: '丙', 午: '丁', 未: '己', 申: '庚', 酉: '辛', 戌: '戊', 亥: '壬' }
+
+const TEN_GOD_GROUPS = {
+  self: {
+    names: ['비견', '겁재'], label: '주도성과 동료성',
+    strength: '자기 기준으로 시작하고 사람들과 나란히 움직이는 힘',
+    caution: '경쟁하거나 혼자 결정하기 전에 목표와 역할을 먼저 합의하는 편이 좋습니다.',
+    roles: ['프로젝트 리더', '창업·프리랜스', '커뮤니티 운영'],
+  },
+  output: {
+    names: ['식신', '상관'], label: '표현과 생산성',
+    strength: '생각을 말·글·결과물로 바꾸고 기존 방식을 개선하는 힘',
+    caution: '아이디어가 많을수록 우선순위와 완료 기준을 숫자로 정하는 편이 좋습니다.',
+    roles: ['강의·교육', '콘텐츠 제작', '기획·디자인'],
+  },
+  wealth: {
+    names: ['편재', '정재'], label: '성과와 자원 관리',
+    strength: '시간·돈·사람 같은 현실 자원을 살펴 구체적인 성과로 연결하는 힘',
+    caution: '기회를 넓게 잡더라도 예산과 약속의 범위를 문서로 확인하는 편이 좋습니다.',
+    roles: ['사업개발·영업', '재무·구매', '운영 관리'],
+  },
+  authority: {
+    names: ['편관', '정관'], label: '책임과 기준',
+    strength: '규칙과 책임을 받아들이고 복잡한 상황에 질서를 세우는 힘',
+    caution: '높은 기준이 자신과 타인에게 과도한 압박이 되지 않도록 중간 점검이 필요합니다.',
+    roles: ['행정·공공', '품질·법무', '조직 관리'],
+  },
+  resource: {
+    names: ['편인', '정인'], label: '학습과 통찰',
+    strength: '정보를 깊이 받아들이고 의미를 찾아 새로운 관점으로 재구성하는 힘',
+    caution: '준비가 충분해질 때까지 미루기보다 작은 실험으로 생각을 검증하는 편이 좋습니다.',
+    roles: ['연구·분석', '상담·코칭', '전문 교육'],
+  },
+}
+
+function tenGodGroup(name) {
+  return Object.entries(TEN_GOD_GROUPS).find(([, group]) => group.names.includes(name))?.[0]
+}
+
 function assertDateParts(year, month, day, hour, minute) {
   if (![year, month, day, hour, minute].every(Number.isInteger)) throw new Error('날짜와 시간은 정수로 입력해 주세요.')
   if (year < 1900 || year > 2100) throw new Error('지원 연도는 1900년부터 2100년까지입니다.')
@@ -134,14 +173,68 @@ function directPillarData(ganZhi, label, dayStem, libraryPillar) {
 
 function buildInterpretation(pillars, balance) {
   const dayStem = pillars.day.stem
+  const dayElement = STEM_ELEMENT[dayStem]
   const sorted = Object.entries(balance).sort((a, b) => b[1] - a[1])
   const dominant = sorted[0][0]
   const missing = sorted.filter(([, count]) => count === 0).map(([key]) => key)
+  const targets = Object.values(pillars).flatMap(pillar => [pillar.stem, BRANCH_MAIN_STEM[pillar.branch]])
+  targets.splice(4, 1) // 일간 자신은 십신 분포에서 제외한다.
+  const tenGodBalance = Object.fromEntries(['비견', '겁재', '식신', '상관', '편재', '정재', '편관', '정관', '편인', '정인'].map(name => [name, 0]))
+  for (const target of targets) tenGodBalance[getTenGod(dayStem, target)] += 1
+  const groupBalance = { self: 0, output: 0, wealth: 0, authority: 0, resource: 0 }
+  for (const [name, count] of Object.entries(tenGodBalance)) groupBalance[tenGodGroup(name)] += count
+  const groupOrder = Object.entries(groupBalance).sort((a, b) => b[1] - a[1])
+  const primaryGroup = TEN_GOD_GROUPS[groupOrder[0][0]]
+  const secondaryGroup = TEN_GOD_GROUPS[groupOrder[1][0]]
+  const day = DAY_MASTER[dayStem]
+  const dominantCopy = ELEMENT_COPY[dominant]
+  const missingLabel = missing.length ? missing.map(key => `${ELEMENTS[key].ko}(${ELEMENTS[key].hanja})`).join('·') : '뚜렷하게 비어 있는 오행 없음'
+  const careerRoles = [...new Set([...primaryGroup.roles, ...dominantCopy.work, ...secondaryGroup.roles])]
+  const wealthCount = groupBalance.wealth
+  const selfCount = groupBalance.self
+  const authorityCount = groupBalance.authority
+  const resourceCount = groupBalance.resource
+  const outputCount = groupBalance.output
+
+  const readings = {
+    overall: {
+      title: `${dayStem} 일간, ${day[0]}처럼 흐르는 사람`,
+      body: `${day[1]}이 삶의 기본 태도로 드러납니다. 여기에 ${ELEMENTS[dominant].ko}(${ELEMENTS[dominant].hanja})의 ${dominantCopy.strength}이 강하게 보태지고, 십신에서는 ${primaryGroup.label}의 흐름이 가장 선명합니다. 따라서 이 명식은 한 가지 운명을 예고한다기보다, 자신의 감각을 실제 결과로 연결할 때 강점이 살아나는 구조로 읽을 수 있습니다.`,
+      points: [`가장 두드러진 힘: ${primaryGroup.strength}`, `보완해서 쓸 힘: ${secondaryGroup.strength}`, `표면 오행의 빈자리: ${missingLabel}`],
+    },
+    personality: {
+      title: '섬세한 관찰을 자기 방식으로 정리합니다',
+      body: `${day[0]}의 기질은 ${day[1]}으로 나타납니다. ${ELEMENTS[dominant].ko} 기운이 많아질수록 ${dominantCopy.strength}이 빠르게 작동하지만, 같은 장점이 과해지면 익숙한 방식에 오래 머물거나 생각과 행동의 속도가 어긋날 수 있습니다. ${primaryGroup.caution} 성격을 고정된 유형으로 단정하기보다, 편안할 때와 압박받을 때의 차이를 관찰하는 것이 이 명식을 더 정확하게 활용하는 방법입니다.`,
+      points: [`강점: ${day[1]}`, `주의: ${dominantCopy.caution}`, `균형 질문: 지금 필요한 것은 확장인가, 정리인가?`],
+    },
+    career: {
+      title: `${primaryGroup.label}을 쓰는 역할에서 역량이 드러납니다`,
+      body: `직업 이름 하나를 정답으로 고르기보다 어떤 기능을 맡을 때 힘이 나는지 보는 편이 적절합니다. 이 명식은 ${primaryGroup.strength}과 ${dominantCopy.strength}을 함께 사용할 때 몰입도가 높아질 가능성이 있습니다. 특히 ${careerRoles.slice(0, 4).join('·')}처럼 사람과 정보를 연결하면서 결과 기준이 분명한 역할을 우선 탐색해 볼 만합니다. 실제 진로 선택에서는 흥미, 경험, 자격, 노동 조건을 함께 확인해야 합니다.`,
+      points: [`잘 맞는 역할: ${careerRoles.slice(0, 3).join(' · ')}`, `확장 후보: ${careerRoles.slice(3, 6).join(' · ')}`, `선택 기준: 자율성·완료 기준·협업 방식이 분명한가?`],
+    },
+    wealth: {
+      title: wealthCount ? '돈의 흐름은 계획과 실행을 연결할 때 안정됩니다' : '재물은 별도 기준을 세울수록 선명해집니다',
+      body: wealthCount ? `재성과 연결되는 글자가 ${wealthCount}개 보여 현실 자원과 성과를 의식하는 흐름이 있습니다. 다만 재성이 있다는 사실이 재산의 크기나 투자 성공을 보장하지는 않습니다. ${primaryGroup.caution} 수입을 늘리는 판단과 지출을 지키는 판단을 분리하고, 큰 결정은 감정이 가라앉은 뒤 예산·기간·최악의 경우를 적어 보는 방식이 이 명식의 실행력을 안정적으로 살립니다.` : `표면 십신에서 재성이 두드러지지 않는다고 재물운이 없다는 뜻은 아닙니다. 돈보다 의미·관계·전문성을 먼저 보는 경향이 있을 수 있으므로, 수입과 지출을 자동으로 기록하고 큰 결제에는 하루의 간격을 두는 식의 외부 기준이 도움이 됩니다. 재무 결정은 사주가 아니라 실제 소득, 부채, 위험 감수 범위를 기준으로 해야 합니다.`,
+      points: [`재성 표면 개수: ${wealthCount}`, '실천: 고정비·변동비·성장비를 나누어 기록하기', '주의: 투자·대출 판단을 사주 해석에 맡기지 않기'],
+    },
+    relationship: {
+      title: '가까운 사이일수록 기대와 경계를 말로 확인하세요',
+      body: `비겁 흐름 ${selfCount}, 관성 흐름 ${authorityCount}의 조합은 관계에서 자율성과 책임을 어떻게 나누는지가 중요하다는 뜻으로 읽을 수 있습니다. ${selfCount >= authorityCount ? '자기 방식과 속도를 존중받을 때 편안하지만, 상대에게도 같은 선택권을 남겨 두어야 합니다.' : '약속과 역할을 중요하게 여기지만, 기준을 맞추는 과정에서 자신의 욕구를 뒤로 미루지 않는 것이 필요합니다.'} 마음을 알아주길 기다리기보다 원하는 도움, 어려운 점, 가능한 범위를 구체적으로 말할수록 관계의 오해가 줄어듭니다.`,
+      points: ['잘 맞는 대화: 감정 평가보다 관찰한 사실부터 말하기', '갈등 점검: 승패보다 다시 합의할 조건 찾기', '관계 기준: 친밀함과 경계를 함께 존중하는가?'],
+    },
+    wellbeing: {
+      title: '생각과 활동의 리듬을 번갈아 배치하세요',
+      body: `인성 흐름 ${resourceCount}, 식상 흐름 ${outputCount}의 배치는 받아들이는 시간과 밖으로 표현하는 시간의 균형을 살피게 합니다. ${resourceCount > outputCount ? '정보를 충분히 모은 뒤 움직이려는 편이라 준비가 길어질 때 몸을 먼저 움직이는 짧은 활동이 도움이 될 수 있습니다.' : '표현과 실행이 빠른 편이라 일정 사이에 아무 결과도 만들지 않는 회복 시간을 넣는 것이 좋습니다.'} 이는 질병이나 체질을 진단하는 내용이 아니며, 불편한 증상은 의료 전문가에게 확인해야 합니다.`,
+      points: ['생활 리듬: 집중 시간 뒤에 의도적인 전환 시간 두기', `보완 오행: ${missingLabel}을 색·음식이 아닌 다양한 활동 경험으로 채우기`, '건강 원칙: 증상과 치료 판단은 의료 정보와 전문가 상담을 따르기'],
+    },
+  }
+
   return {
-    dayMaster: { stem: dayStem, image: DAY_MASTER[dayStem][0], summary: DAY_MASTER[dayStem][1] },
-    dominant: { key: dominant, ...ELEMENT_COPY[dominant] },
+    dayMaster: { stem: dayStem, image: day[0], summary: day[1], element: dayElement },
+    dominant: { key: dominant, ...dominantCopy },
     missing: missing.map(key => ({ key, ...ELEMENT_COPY[key] })),
-    note: '오행의 개수만으로 좋고 나쁨을 단정하지 않습니다. 계절·지장간·합충과 전체 구조를 함께 살펴야 합니다.',
+    tenGodBalance, groupBalance, careerRoles, readings,
+    note: '이 해석은 일간·표면 오행·십신의 주기운을 조합한 입문용 참고입니다. 좋고 나쁨을 단정하거나 미래 사건을 예언하지 않습니다.',
   }
 }
 

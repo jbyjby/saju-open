@@ -66,6 +66,15 @@ function renderResult(data, timeUnknown) {
     ? data.interpretation.missing.map(item => `${ELEMENTS[item.key].ko}(${ELEMENTS[item.key].hanja})`).join(', ')
     : '없음'
   const cycles = data.luckCycles.map(cycle => `<li><b>${cycle.ganZhi}</b><span>${cycle.startAge}–${cycle.endAge}세</span></li>`).join('')
+  const readingLabels = {
+    overall: ['전체 흐름', '總運'], personality: ['성향과 강점', '性向'], career: ['직업과 일', '職業'],
+    wealth: ['재물과 관리', '財物'], relationship: ['관계와 소통', '關係'], wellbeing: ['생활 리듬', '健康'],
+  }
+  const deepReadings = Object.entries(data.interpretation.readings).map(([key, reading], index) => `
+    <article class="deep-reading ${key === 'overall' ? 'featured' : ''}">
+      <div class="deep-reading-label"><span>${String(index + 1).padStart(2, '0')}</span><p>${readingLabels[key][0]}<small>${readingLabels[key][1]}</small></p></div>
+      <div class="deep-reading-copy"><h3>${reading.title}</h3><p>${reading.body}</p><ul>${reading.points.map(point => `<li>${point}</li>`).join('')}</ul></div>
+    </article>`).join('')
   const corrected = data.corrected
   const solar = data.solarDate
   result.innerHTML = `
@@ -76,6 +85,15 @@ function renderResult(data, timeUnknown) {
       ${timeUnknown ? '<p class="time-warning">태어난 시간을 몰라 낮 12시로 임시 계산했습니다. 시주와 대운 시작 시점은 달라질 수 있습니다.</p>' : ''}
     </div>
     <div class="pillars" data-testid="pillars">${pillars}</div>
+    <section class="interpretation" data-testid="interpretation" aria-labelledby="interpretation-title">
+      <header class="interpretation-head">
+        <p>명식을 삶의 언어로 풀어보기</p>
+        <h2 id="interpretation-title">사주 해석</h2>
+        <p>${data.interpretation.note}</p>
+      </header>
+      <div class="deep-readings">${deepReadings}</div>
+    </section>
+    <div class="reading-basis"><p>풀이의 근거</p><h2>오행과 일간</h2></div>
     <div class="reading-grid">
       <article class="reading-card day-master">
         <p>나를 나타내는 일간</p>

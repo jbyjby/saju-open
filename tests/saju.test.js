@@ -61,4 +61,21 @@ describe('해석 규칙', () => {
   it('갑목 일간에서 편재인 무토를 판정한다', () => {
     expect(getTenGod('甲', '戊')).toBe('편재')
   })
+
+  it('명식에 따라 6개 영역의 심층 해석을 만든다', () => {
+    const result = calculateSaju({
+      calendar: 'solar', year: 1986, month: 5, day: 29,
+      hour: 0, minute: 32, gender: 'male',
+    })
+    expect(Object.keys(result.interpretation.readings)).toEqual([
+      'overall', 'personality', 'career', 'wealth', 'relationship', 'wellbeing',
+    ])
+    for (const reading of Object.values(result.interpretation.readings)) {
+      expect(reading.title.length).toBeGreaterThan(2)
+      expect(reading.body.length).toBeGreaterThan(80)
+      expect(reading.points.length).toBeGreaterThanOrEqual(2)
+    }
+    expect(result.interpretation.careerRoles.length).toBeGreaterThanOrEqual(4)
+    expect(Object.values(result.interpretation.tenGodBalance).reduce((a, b) => a + b, 0)).toBe(7)
+  })
 })
