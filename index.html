@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="계산 근거를 공개하는 사주 명식 탐색 도구" />
+  <title>사이 — 근거를 읽는 사주</title>
+  <link rel="stylesheet" href="/src/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="사이 처음으로"><span>사이</span><small>四柱를 읽는 사이</small></a>
+    <nav aria-label="주요 메뉴">
+      <a href="#reading">사주 보기</a>
+      <a href="#method">계산 기준</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="intro" aria-labelledby="main-title">
+      <p class="eyebrow">OPEN SAJU READING</p>
+      <h1 id="main-title">나의 사주를<br><em>천천히 읽어보세요</em></h1>
+      <p class="lede">생년월일시를 네 개의 기둥으로 펼쳐 보고, 어떤 계산과 해석 규칙을 썼는지 함께 보여드립니다.</p>
+    </section>
+
+    <section class="calculator" id="reading" aria-labelledby="form-title">
+      <div class="section-index" aria-hidden="true">01</div>
+      <div class="section-body">
+        <div class="section-heading">
+          <p>명식 입력</p>
+          <h2 id="form-title">태어난 때를 알려주세요</h2>
+        </div>
+        <form id="birth-form" novalidate>
+          <fieldset class="segmented">
+            <legend>달력 종류</legend>
+            <label><input type="radio" name="calendar" value="solar" checked><span>양력</span></label>
+            <label><input type="radio" name="calendar" value="lunar"><span>음력</span></label>
+          </fieldset>
+
+          <div class="date-grid">
+            <label><span>태어난 해</span><input id="year" name="year" type="number" inputmode="numeric" min="1900" max="2100" value="1990" required><b>년</b></label>
+            <label><span>태어난 달</span><select id="month" name="month" aria-label="태어난 달"></select><b>월</b></label>
+            <label><span>태어난 날</span><select id="day" name="day" aria-label="태어난 날"></select><b>일</b></label>
+            <label><span>태어난 시</span><select id="hour" name="hour" aria-label="태어난 시"></select><b>시</b></label>
+            <label><span>태어난 분</span><select id="minute" name="minute" aria-label="태어난 분"></select><b>분</b></label>
+          </div>
+
+          <div class="inline-options">
+            <label id="leap-option" hidden><input type="checkbox" name="isLeapMonth"> 윤달</label>
+            <label><input type="checkbox" id="unknown-time"> 태어난 시간을 모름</label>
+          </div>
+
+          <fieldset class="gender-field">
+            <legend>성별 <small>대운 순행·역행 계산에 사용</small></legend>
+            <label><input type="radio" name="gender" value="female" checked><span>여성</span></label>
+            <label><input type="radio" name="gender" value="male"><span>남성</span></label>
+          </fieldset>
+
+          <label class="consent"><input id="consent" type="checkbox" checked aria-label="개인정보 처리 안내에 동의"><span>입력값은 서버로 전송하거나 저장하지 않습니다. 이 브라우저 안에서 계산하는 것에 동의합니다.</span></label>
+          <div id="form-error" class="form-error" role="alert" aria-live="polite"></div>
+          <button class="primary" type="submit">사주 살펴보기 <span aria-hidden="true">→</span></button>
+        </form>
+      </div>
+    </section>
+
+    <section id="result" class="result" hidden aria-live="polite"></section>
+
+    <section class="method" id="method" aria-labelledby="method-title">
+      <div class="section-index" aria-hidden="true">02</div>
+      <div class="section-body">
+        <div class="section-heading">
+          <p>투명한 계산</p>
+          <h2 id="method-title">계산 기준과 출처</h2>
+        </div>
+        <p class="method-intro">저장된 만세력 표를 조회하는 방식이 아닙니다. 오픈소스 역법 계산과 명시된 보정 규칙을 사용하며, 계산과 해석을 구분해 표시합니다.</p>
+        <div class="source-list">
+          <article><span>01</span><div><h3>절기·연주·월주·음양력 변환·대운</h3><p><a href="https://github.com/6tail/lunar-javascript" target="_blank" rel="noreferrer">6tail lunar-javascript v1.7.7</a>의 역법 계산을 사용합니다. MIT 라이선스입니다.</p></div></article>
+          <article><span>02</span><div><h3>일주와 시주</h3><p>일주는 라이브러리의 율리우스일 기반 결과를 사용합니다. 시주는 입력 시각에 서울 경도 126.98° 기준 평균태양시 −32분을 적용한 뒤 계산합니다.</p></div></article>
+          <article><span>03</span><div><h3>한국 표준시 이력</h3><p>실행 환경의 IANA <code>Asia/Seoul</code> 시간대 데이터로 해당 날짜의 역사적 UTC 오프셋을 확인해 결과에 표시합니다.</p></div></article>
+          <article><span>04</span><div><h3>해석 규칙</h3><p>오행·일간·십신의 기초 의미를 별도 규칙 데이터로 작성했습니다. 현재 버전은 팔자 여덟 글자의 표면 오행을 중심으로 읽는 입문용 해석이며, 지장간·합충·격국까지 포함한 전문 감정은 아닙니다.</p></div></article>
+        </div>
+        <details>
+          <summary>참고 자료의 리서치 구조 보기</summary>
+          <div class="research-grid">
+            <p><b>오행</b><span>성향, 과다·부족, 관련 활동과 분야</span></p>
+            <p><b>십신</b><span>적성, 관계 방식, 신강·신약과 직업 해석</span></p>
+            <p><b>일간·신살</b><span>일간 10종, 신살 판정과 상담 절차</span></p>
+            <p><b>직업</b><span>KECO·커리어넷·한국직업사전 기반 분류</span></p>
+          </div>
+          <p class="source-caveat">제공된 참고 이미지의 문서 구조를 반영했습니다. 원문 98건과 직업 200개 데이터 파일은 전달받지 않아 이 버전에 포함하거나 출처 검증 완료로 표시하지 않았습니다.</p>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>사이는 자신을 돌아보기 위한 참고 도구입니다. 중요한 건강·재정·법률·진로 결정의 근거로 단독 사용하지 마세요.</p>
+    <a href="#top">위로 올라가기 ↑</a>
+  </footer>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

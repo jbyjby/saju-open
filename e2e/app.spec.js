@@ -1,0 +1,26 @@
+import { expect, test } from '@playwright/test'
+
+test('생년월일을 입력하면 사주와 근거가 표시된다', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.getByRole('heading', { name: '나의 사주를 천천히 읽어보세요' })).toBeVisible()
+  await page.getByLabel('태어난 해').fill('1986')
+  await page.getByLabel('태어난 달').selectOption('5')
+  await page.getByLabel('태어난 날').selectOption('29')
+  await page.getByLabel('태어난 시', { exact: true }).selectOption('0')
+  await page.getByLabel('태어난 분').selectOption('32')
+  await page.getByRole('button', { name: '사주 살펴보기' }).click()
+  await expect(page.getByTestId('pillars')).toContainText('丙寅')
+  await expect(page.getByTestId('pillars')).toContainText('癸巳')
+  await expect(page.getByTestId('pillars')).toContainText('癸酉')
+  await expect(page.getByRole('heading', { name: '계산 기준과 출처' })).toBeVisible()
+  await expect(page.locator('body')).not.toHaveCSS('overflow-x', 'scroll')
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)
+  expect(overflow).toBe(true)
+})
+
+test('필수 동의 없이 계산하지 않는다', async ({ page }) => {
+  await page.goto('/')
+  await page.getByLabel('개인정보 처리 안내에 동의').uncheck()
+  await page.getByRole('button', { name: '사주 살펴보기' }).click()
+  await expect(page.getByRole('alert')).toContainText('동의')
+})
