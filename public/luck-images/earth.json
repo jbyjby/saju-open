@@ -1,0 +1,24 @@
+{
+  "model": "gemini-3.1-flash-image",
+  "element": "earth",
+  "prompt": "Symbolize the Earth element in Korean saju as steadiness, care, boundaries, and daily order. Warm ochre terraced fields, a low stone wall, broad grounded hills, late-afternoon light, muted sand and clay colors, stable and generous, simple rather than rustic clutter. Premium vertical smartphone wallpaper. Contemporary Korean ink-wash landscape blended with subtle mineral pigments, tactile hanji paper texture, editorial art quality, elegant negative space, calm and refined. No people, no faces, no animals, no talismans, no religious symbols, no zodiac signs, no letters, no calligraphy, no text, no logo, no frame, no watermark. Compose for a phone lock screen with quiet space in the upper third.",
+  "mimeType": "image/jpeg",
+  "usageMetadata": {
+    "promptTokenCount": 148,
+    "candidatesTokenCount": 2119,
+    "totalTokenCount": 2267,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 148
+      }
+    ],
+    "candidatesTokensDetails": [
+      {
+        "modality": "IMAGE",
+        "tokenCount": 1680
+      }
+    ],
+    "serviceTier": "standard"
+  }
+}

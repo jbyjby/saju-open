@@ -1,0 +1,24 @@
+{
+  "model": "gemini-3.1-flash-image",
+  "element": "wood",
+  "prompt": "Symbolize the Wood element in Korean saju as healthy growth, direction, flexibility, and beginning. A slender grove of fresh spring trees rising upward beside a winding path, soft jade and moss green, early morning light, young leaves moving gently, hopeful but not childish. Premium vertical smartphone wallpaper. Contemporary Korean ink-wash landscape blended with subtle mineral pigments, tactile hanji paper texture, editorial art quality, elegant negative space, calm and refined. No people, no faces, no animals, no talismans, no religious symbols, no zodiac signs, no letters, no calligraphy, no text, no logo, no frame, no watermark. Compose for a phone lock screen with quiet space in the upper third.",
+  "mimeType": "image/jpeg",
+  "usageMetadata": {
+    "promptTokenCount": 143,
+    "candidatesTokenCount": 2107,
+    "totalTokenCount": 2250,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 143
+      }
+    ],
+    "candidatesTokensDetails": [
+      {
+        "modality": "IMAGE",
+        "tokenCount": 1680
+      }
+    ],
+    "serviceTier": "standard"
+  }
+}

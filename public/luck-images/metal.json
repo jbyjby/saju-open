@@ -1,0 +1,24 @@
+{
+  "model": "gemini-3.1-flash-image",
+  "element": "metal",
+  "prompt": "Create a premium vertical smartphone wallpaper that symbolizes the Metal element in Korean saju as clarity, discernment, boundaries, and removing what is unnecessary. Contemporary Korean ink-wash landscape blended with subtle mineral pigments. Pale silver reeds, a clean stone ridge, crisp early-autumn dawn light, fine mist, elegant negative space, calm and refined, tactile paper texture, editorial art quality. The mood should feel clear and composed, not cold or threatening. No people, no faces, no weapons, no coins, no jewelry, no talismans, no religious symbols, no zodiac signs, no letters, no calligraphy, no text, no logo, no frame, no watermark. Compose for a phone lock screen with quiet space in the upper third.",
+  "mimeType": "image/jpeg",
+  "usageMetadata": {
+    "promptTokenCount": 148,
+    "candidatesTokenCount": 2046,
+    "totalTokenCount": 2194,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 148
+      }
+    ],
+    "candidatesTokensDetails": [
+      {
+        "modality": "IMAGE",
+        "tokenCount": 1680
+      }
+    ],
+    "serviceTier": "standard"
+  }
+}

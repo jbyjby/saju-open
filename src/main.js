@@ -1,4 +1,4 @@
-import { calculateSaju, ELEMENTS, buildHarmonyWallpaper } from './saju.js'
+import { calculateSaju, ELEMENTS, getLuckImageGuidance } from './saju.js'
 
 const form = document.querySelector('#birth-form')
 const result = document.querySelector('#result')
@@ -152,81 +152,62 @@ function setupLuckExplorer(data) {
 }
 
 function seasonalHarmonyView(harmony) {
-  const svg = buildHarmonyWallpaper(harmony)
-  const imageUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
+  const guidance = getLuckImageGuidance(harmony)
+  const imageUrl = `${import.meta.env.BASE_URL}luck-images/${guidance.neededElement}.jpg`
+  const roleLabels = { 선용: '먼저 살필 기운', 후용: '함께 살필 기운', 보좌: '보조로 살필 기운' }
   const candidates = harmony.candidates.map(item => {
     const location = item.visible ? '원국 천간에 드러남' : item.hidden ? '지장간에 있음' : '원국에서 확인되지 않음'
-    return `<li><b class="element-${item.element}">${item.order}순위 · ${item.stem} ${item.elementKo}(${item.elementHanja})</b><span>${location}</span></li>`
+    return `<li><b class="element-${item.element}">${roleLabels[item.role]} · ${item.stem} ${item.elementKo}(${item.elementHanja})</b><span>${location}</span></li>`
   }).join('')
   return `<section class="seasonal-harmony" data-testid="seasonal-harmony" aria-labelledby="seasonal-harmony-title">
     <div class="harmony-copy">
-      <p>일간 × 월령의 계절 균형</p>
-      <h2 id="seasonal-harmony-title">한난조습과 보완 기운</h2>
-      <p class="harmony-summary"><b>${harmony.dayStem} 일간 · ${harmony.monthBranch}월</b>의 선용·후용·보좌 순서를 바탕으로 살펴본 참고 결과입니다.</p>
-      <p class="harmony-climate">월령 환경: ${harmony.climate}</p>
+      <p>한난조습으로 보는 일간 × 월령의 계절 균형</p>
+      <h2 id="seasonal-harmony-title">이 사주에 이 이미지가 필요한 이유</h2>
+      <p class="harmony-summary"><b>${harmony.dayStem} 일간은 ${guidance.strength}</b> ${guidance.blindSpot}</p>
+      <p class="harmony-climate">${harmony.monthBranch}월은 ${harmony.climate}가 두드러지는 때입니다. 이 계절에는 <b>${guidance.neededLabel}</b>을 먼저 보완 기운으로 살핍니다.</p>
+      <p class="harmony-why">${guidance.whyNeeded}</p>
       <ol>${candidates}</ol>
-      <p class="harmony-source">판정 근거: ${harmony.source} · ${harmony.evidenceId}</p>
-      <p class="harmony-caveat">이는 계절 균형을 위한 후보이며 조후용신이나 최종 용신의 확정이 아닙니다. 격국·강약·투간·합충과 실제 생활 맥락을 함께 살펴야 합니다.</p>
-      <p class="harmony-caveat">이미지는 전통적 상징과 생활 의도를 떠올리는 배경화면입니다. 저장만으로 운의 변화나 특정 결과를 보장하지 않습니다.</p>
+      <div class="luck-definition"><h3>개운은 이렇게 쓰는 겁니다</h3><p>${guidance.definition}</p><ul>${guidance.practice.map(item => `<li>${item}</li>`).join('')}</ul><p>${guidance.saveReason}</p></div>
+      <details class="harmony-evidence"><summary>판정 기준과 한계 보기</summary><p>${harmony.source} · ${harmony.evidenceId}</p><p>이 결과는 계절 균형을 살피는 보완 후보입니다. 조후용신이나 최종 용신을 확정한 결과는 아닙니다. 격국·강약·투간·합충과 실제 생활 조건을 함께 살펴야 합니다.</p><p>이미지 저장만으로 운의 변화나 특정 결과를 보장하지 않습니다.</p></details>
     </div>
     <figure class="wallpaper-preview">
       <img src="${imageUrl}" alt="계절 균형 이미지 — ${harmony.candidates.map(item => `${item.elementKo} 기운`).join('과 ')}을 상징하는 휴대폰 배경" />
       <figcaption>
-        <span>1080 × 1920 · 기기 안에서 생성</span>
-        <button type="button" data-download-wallpaper>무료 이미지 저장</button>
+        <span>2K 세로 · Gemini로 제작한 무료 기본형</span>
+        <small>생년월일을 이미지 API로 보내지 않습니다.</small>
+        <button type="button" data-download-wallpaper>이 개운 이미지 저장하기</button>
       </figcaption>
     </figure>
   </section>`
 }
 
-function downloadWallpaper(svg, harmony) {
-  return new Promise((resolve, reject) => {
-    const sourceUrl = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }))
-    const image = new Image()
-    image.onload = () => {
-      const canvas = document.createElement('canvas')
-      canvas.width = 1080
-      canvas.height = 1920
-      const context = canvas.getContext('2d')
-      context.drawImage(image, 0, 0, canvas.width, canvas.height)
-      URL.revokeObjectURL(sourceUrl)
-      canvas.toBlob(blob => {
-        if (!blob) {
-          reject(new Error('PNG 이미지를 만들지 못했습니다.'))
-          return
-        }
-        const targetUrl = URL.createObjectURL(blob)
-        const link = document.createElement('a')
-        link.href = targetUrl
-        link.download = `sai-seasonal-balance-${harmony.dayStem}-${harmony.monthBranch}.png`
-        link.click()
-        window.setTimeout(() => URL.revokeObjectURL(targetUrl), 1000)
-        resolve()
-      }, 'image/png')
-    }
-    image.onerror = () => {
-      URL.revokeObjectURL(sourceUrl)
-      reject(new Error('배경 이미지를 불러오지 못했습니다.'))
-    }
-    image.src = sourceUrl
-  })
+async function downloadWallpaper(imageUrl, harmony) {
+  const response = await fetch(imageUrl)
+  if (!response.ok) throw new Error('이미지를 불러오지 못했습니다.')
+  const targetUrl = URL.createObjectURL(await response.blob())
+  const link = document.createElement('a')
+  link.href = targetUrl
+  link.download = `sai-seasonal-balance-${harmony.dayStem}-${harmony.monthBranch}.jpg`
+  link.click()
+  window.setTimeout(() => URL.revokeObjectURL(targetUrl), 1000)
 }
 
 function setupWallpaper(data) {
   const button = result.querySelector('[data-download-wallpaper]')
-  const svg = buildHarmonyWallpaper(data.seasonalHarmony)
+  const guidance = getLuckImageGuidance(data.seasonalHarmony)
+  const imageUrl = `${import.meta.env.BASE_URL}luck-images/${guidance.neededElement}.jpg`
   button.addEventListener('click', async () => {
     button.disabled = true
-    button.textContent = '이미지 만드는 중…'
+    button.textContent = '저장하는 중…'
     try {
-      await downloadWallpaper(svg, data.seasonalHarmony)
+      await downloadWallpaper(imageUrl, data.seasonalHarmony)
       button.textContent = '저장 완료'
     } catch (error) {
       button.textContent = error.message
     } finally {
       window.setTimeout(() => {
         button.disabled = false
-        button.textContent = '무료 이미지 저장'
+        button.textContent = '이 개운 이미지 저장하기'
       }, 1500)
     }
   })
@@ -264,18 +245,18 @@ function renderResult(data, timeUnknown) {
     ${seasonalHarmonyView(data.seasonalHarmony)}
     <section class="interpretation" data-testid="interpretation" aria-labelledby="interpretation-title">
       <header class="interpretation-head">
-        <p>명식을 삶의 언어로 풀어보기</p>
+        <p>어려운 명리 용어를 쉬운 말로 풀었습니다</p>
         <h2 id="interpretation-title">사주 해석</h2>
         <p>${data.interpretation.note}</p>
       </header>
       <div class="deep-readings">${deepReadings}</div>
     </section>
-    <div class="reading-basis"><p>풀이의 근거</p><h2>오행과 일간</h2></div>
+    <div class="reading-basis"><p>왜 이렇게 풀이했는지 살펴봅니다</p><h2>오행과 일간</h2></div>
     <div class="reading-grid">
       <article class="reading-card day-master">
         <p>나를 나타내는 일간</p>
         <h3>${data.interpretation.dayMaster.stem} · ${data.interpretation.dayMaster.image}</h3>
-        <p>${data.interpretation.dayMaster.summary}이 중심에 놓여 있습니다. 이는 타고난 성향을 살펴보는 하나의 관점이지 성격을 고정하는 진단은 아닙니다.</p>
+        <p>이 사주의 바탕에는 ${data.interpretation.dayMaster.summary}이 있습니다. 다만 일간 하나만으로 성격 전체를 정할 수는 없습니다.</p>
       </article>
       <article class="reading-card">
         <p>오행의 표면 분포</p>
@@ -296,7 +277,7 @@ function renderResult(data, timeUnknown) {
       <div data-cycle-panel></div>
     </section>
     <div class="calculation-receipt">
-      <h3>이번 계산의 영수증</h3>
+      <h3>계산에 사용한 기준</h3>
       <dl>
         <div><dt>입력 달력</dt><dd>${data.entered.calendar === 'solar' ? '양력' : `음력${data.entered.isLeapMonth ? ' 윤달' : ''}`}</dd></div>
         <div><dt>양력 변환</dt><dd>${solar.year}-${String(solar.month).padStart(2, '0')}-${String(solar.day).padStart(2, '0')}</dd></div>

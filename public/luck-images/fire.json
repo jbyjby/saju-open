@@ -1,0 +1,24 @@
+{
+  "model": "gemini-3.1-flash-image",
+  "element": "fire",
+  "prompt": "Symbolize the Fire element in Korean saju as warmth, expression, courage, and movement. A quiet sunrise spreading warm coral and amber light across distant hills and a small field of red-tipped grasses, luminous air, gentle energy, no literal flames, balanced and comforting rather than intense. Premium vertical smartphone wallpaper. Contemporary Korean ink-wash landscape blended with subtle mineral pigments, tactile hanji paper texture, editorial art quality, elegant negative space, calm and refined. No people, no faces, no animals, no talismans, no religious symbols, no zodiac signs, no letters, no calligraphy, no text, no logo, no frame, no watermark. Compose for a phone lock screen with quiet space in the upper third.",
+  "mimeType": "image/jpeg",
+  "usageMetadata": {
+    "promptTokenCount": 147,
+    "candidatesTokenCount": 2107,
+    "totalTokenCount": 2254,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 147
+      }
+    ],
+    "candidatesTokensDetails": [
+      {
+        "modality": "IMAGE",
+        "tokenCount": 1680
+      }
+    ],
+    "serviceTier": "standard"
+  }
+}

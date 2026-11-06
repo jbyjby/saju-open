@@ -40,13 +40,6 @@ const MONTH_CLIMATE = {
   亥: '초겨울의 차고 습한 기운', 子: '한겨울의 강한 찬 기운', 丑: '겨울 끝의 차고 습한 기운',
 }
 
-const ELEMENT_WALLPAPER = {
-  wood: { light: '#c7dfca', dark: '#315d49', accent: '#75a27f', symbol: '새싹과 숲' },
-  fire: { light: '#f4d1b8', dark: '#8b3f33', accent: '#d87554', symbol: '햇빛과 온기' },
-  earth: { light: '#e4d2ad', dark: '#665033', accent: '#b38a52', symbol: '대지와 산' },
-  metal: { light: '#e1e3e6', dark: '#4e555e', accent: '#929aa4', symbol: '빛과 결' },
-  water: { light: '#bfd8e3', dark: '#244d64', accent: '#5f91aa', symbol: '물결과 깊이' },
-}
 
 const STEM_ELEMENT = {
   甲: 'wood', 乙: 'wood', 丙: 'fire', 丁: 'fire', 戊: 'earth', 己: 'earth',
@@ -82,31 +75,6 @@ export function getSeasonalHarmony(dayStem, monthBranch, pillars = null) {
   }
 }
 
-export function buildHarmonyWallpaper(harmony) {
-  const primary = ELEMENT_WALLPAPER[harmony.candidates[0].element]
-  const secondary = ELEMENT_WALLPAPER[harmony.candidates[1]?.element || harmony.candidates[0].element]
-  const stems = harmony.candidates.map(item => item.stem).join(' · ')
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920" role="img" aria-label="계절 균형 이미지">
-  <defs>
-    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="${primary.light}"/><stop offset="1" stop-color="${secondary.dark}"/></linearGradient>
-    <radialGradient id="light"><stop stop-color="#fff" stop-opacity=".88"/><stop offset="1" stop-color="${primary.accent}" stop-opacity=".08"/></radialGradient>
-  </defs>
-  <rect width="1080" height="1920" fill="url(#sky)"/>
-  <circle cx="760" cy="390" r="250" fill="url(#light)"/>
-  <path d="M0 1260 C210 1110 330 1370 540 1210 S870 1090 1080 1260 V1920 H0Z" fill="${primary.dark}" opacity=".62"/>
-  <path d="M0 1450 C240 1300 420 1540 650 1390 S900 1360 1080 1460 V1920 H0Z" fill="${secondary.dark}" opacity=".72"/>
-  <path d="M80 1590 C310 1490 470 1710 710 1570 S940 1580 1040 1630" fill="none" stroke="${primary.light}" stroke-width="8" opacity=".55"/>
-  <g fill="#fff" font-family="Pretendard, Apple SD Gothic Neo, sans-serif">
-    <text x="80" y="130" font-size="30" letter-spacing="8" opacity=".78">SAI · SEASONAL BALANCE</text>
-    <text x="80" y="230" font-size="62" font-weight="700">계절 균형 이미지</text>
-    <text x="80" y="305" font-size="34" opacity=".86">${harmony.dayStem} 일간 · ${harmony.monthBranch}월령</text>
-    <text x="80" y="1640" font-size="30" opacity=".78">상징 기운</text>
-    <text x="80" y="1710" font-size="58" font-weight="700">${stems}</text>
-    <text x="80" y="1770" font-size="28" opacity=".84">${primary.symbol} · ${secondary.symbol}</text>
-    <text x="80" y="1840" font-size="23" opacity=".72">이 이미지는 생활 의도를 환기하는 상징이며 효능을 보장하지 않습니다.</text>
-  </g>
-</svg>`
-}
 
 const STEM_YANG = { 甲: true, 乙: false, 丙: true, 丁: false, 戊: true, 己: false, 庚: true, 辛: false, 壬: true, 癸: false }
 const GENERATES = { wood: 'fire', fire: 'earth', earth: 'metal', metal: 'water', water: 'wood' }
@@ -118,6 +86,50 @@ const DAY_MASTER = {
   戊: ['큰 산', '흔들리지 않고 중심을 잡는 힘'], 己: ['논밭', '현실적으로 돌보고 길러 내는 힘'],
   庚: ['원석', '결단하고 구조를 새롭게 다듬는 힘'], 辛: ['보석', '정교하게 구분하고 완성도를 높이는 힘'],
   壬: ['큰 바다', '넓게 받아들이며 흐름을 읽는 힘'], 癸: ['비와 이슬', '섬세하게 관찰하고 조용히 스며드는 힘'],
+}
+
+const DAY_MASTER_GUIDANCE = {
+  甲: { strength: '방향을 정하면 꾸준히 밀고 나가는 힘이 있습니다.', blindSpot: '계획이 분명한 만큼, 상황이 달라져도 처음 정한 길을 고집하기 쉽습니다.' },
+  乙: { strength: '주변을 세심하게 살피고 사람과 일을 자연스럽게 이어 줍니다.', blindSpot: '여러 사정을 맞추다 보면 정작 자신의 뜻을 뒤로 미루기 쉽습니다.' },
+  丙: { strength: '분위기를 밝히고 생각을 밖으로 드러내는 힘이 좋습니다.', blindSpot: '속도가 붙으면 세부 조건을 놓치거나 기운을 한꺼번에 써 버리기 쉽습니다.' },
+  丁: { strength: '작은 차이를 알아보고 필요한 곳에 집중하는 힘이 있습니다.', blindSpot: '한 가지를 오래 살피다 보면 생각이 예민해지고 시야가 좁아지기 쉽습니다.' },
+  戊: { strength: '쉽게 흔들리지 않고 사람과 일을 든든하게 받쳐 줍니다.', blindSpot: '버티는 힘이 좋은 만큼, 혼자 감당하다가 바꿀 때를 늦게 알아차리기 쉽습니다.' },
+  己: { strength: '현실을 꼼꼼히 돌보고 작은 성과를 차곡차곡 길러 냅니다.', blindSpot: '챙길 일이 많아지면 자신의 몫까지 떠안고 걱정을 쌓아 두기 쉽습니다.' },
+  庚: { strength: '문제의 핵심을 가려 내고 결정을 내리는 힘이 분명합니다.', blindSpot: '판단이 빠른 만큼, 아직 다듬어지는 중인 가능성까지 일찍 잘라 내기 쉽습니다.' },
+  辛: { strength: '기준이 섬세하고 결과의 완성도를 높이는 데 능합니다.', blindSpot: '잘하고 싶은 마음이 커지면 작은 흠도 오래 마음에 남기기 쉽습니다.' },
+  壬: { strength: '큰 흐름을 읽고 낯선 정보도 폭넓게 받아들이는 힘이 있습니다.', blindSpot: '가능성을 넓게 보는 만큼, 한곳에 힘을 모으기까지 시간이 걸리기 쉽습니다.' },
+  癸: { strength: '사람과 상황의 작은 변화를 세심하게 알아차리는 힘이 있습니다.', blindSpot: '생각이 많아지면 결정을 미루거나 주변 분위기를 자기 마음처럼 받아들이기 쉽습니다.' },
+}
+
+const ELEMENT_LUCK_GUIDANCE = {
+  wood: { meaning: '새로 시작하고 방향을 세우는 힘', why: '미뤄 둔 일을 작게라도 시작하도록 돕는 기운', practice: ['오늘 시작할 일 한 가지를 정하기', '해야 할 일을 첫 단계까지 쪼개기', '산책하며 다음 방향을 한 문장으로 정리하기'] },
+  fire: { meaning: '따뜻하게 표현하고 움직이는 힘', why: '마음속 생각을 말과 행동으로 꺼내도록 돕는 기운', practice: ['고마움이나 바라는 점을 말로 전하기', '햇빛을 보며 몸을 가볍게 움직이기', '미룬 연락 한 건을 먼저 하기'] },
+  earth: { meaning: '흩어진 것을 모으고 생활을 안정시키는 힘', why: '복잡한 생각을 현실의 순서와 습관으로 바꾸도록 돕는 기운', practice: ['책상이나 가방 한 곳을 정리하기', '이번 주 고정 일정을 먼저 적기', '할 수 있는 일과 맡기 어려운 일을 나누기'] },
+  metal: { meaning: '기준을 세우고 불필요한 것을 덜어 내는 힘', why: '생각과 감정을 정리해 분명한 선택으로 옮기도록 돕는 기운', practice: ['오늘 하지 않을 일 한 가지를 정하기', '결정 기준을 세 문장 안으로 적기', '필요 없는 알림이나 약속 하나를 정리하기'] },
+  water: { meaning: '속도를 낮추고 흐름을 살피는 힘', why: '서두르기 전에 마음과 상황을 충분히 읽도록 돕는 기운', practice: ['답을 정하기 전에 잠깐 멈추기', '잠들기 전 머릿속 생각을 적기', '일정 사이에 아무것도 하지 않는 시간을 두기'] },
+}
+
+export function getLuckImageGuidance(harmony) {
+  const day = DAY_MASTER_GUIDANCE[harmony.dayStem]
+  const primary = harmony.candidates[0]
+  const element = ELEMENT_LUCK_GUIDANCE[primary.element]
+  if (!day || !primary || !element) throw new Error('개운 이미지 안내를 만들 판정 근거가 부족합니다.')
+  const location = primary.visible
+    ? '이 기운이 겉으로 드러나 있지만, 바쁠 때는 장점보다 날카로움이 먼저 나타날 수 있습니다.'
+    : primary.hidden
+      ? '이 기운이 사주 안에 숨어 있어도 저절로 충분히 쓰이는 것은 아닙니다. 필요할 때 의식해서 꺼내 쓰는 편이 좋습니다.'
+      : '이 기운이 원국에서 뚜렷하게 확인되지 않으므로 생활 속에서 의식적으로 보완해 볼 만합니다.'
+  return {
+    strength: day.strength,
+    blindSpot: day.blindSpot,
+    neededElement: primary.element,
+    neededLabel: `${primary.stem} ${primary.elementKo}(${primary.elementHanja})`,
+    whyNeeded: `${primary.elementKo} 기운이 상징하는 ${element.meaning}은 ${element.why}입니다. ${location}`,
+    practice: element.practice,
+    definition: '여기서 개운은 운명을 바꾸는 주문이 아닙니다. 내 사주가 놓치기 쉬운 방향을 알아차리고, 선택과 습관을 조금씩 바꾸는 일입니다.',
+    saveReason: '이 이미지를 휴대폰 배경화면에 두는 이유도 같습니다. 하루에 여러 번 화면을 볼 때마다 지금 필요한 태도를 짧게 떠올리는 표지로 쓰세요.',
+    claimsGuaranteedEffect: false,
+  }
 }
 
 const ELEMENT_COPY = {
@@ -288,54 +300,54 @@ function buildInterpretation(pillars, balance, gender) {
 
   const readings = {
     overall: {
-      title: `${dayStem} 일간, ${day[0]}처럼 흐르는 사람`,
-      body: `${day[1]}이 삶의 기본 태도로 드러납니다. 여기에 ${ELEMENTS[dominant].ko}(${ELEMENTS[dominant].hanja})의 ${dominantCopy.strength}이 강하게 보태지고, 십신에서는 ${primaryGroup.label}의 흐름이 가장 선명합니다. 따라서 이 명식은 한 가지 운명을 예고한다기보다, 자신의 감각을 실제 결과로 연결할 때 강점이 살아나는 구조로 읽을 수 있습니다.`,
-      points: [`가장 두드러진 힘: ${primaryGroup.strength}`, `보완해서 쓸 힘: ${secondaryGroup.strength}`, `표면 오행의 빈자리: ${missingLabel}`],
+      title: `${dayStem} 일간, ${day[0]}의 기질을 지녔습니다`,
+      body: `나를 나타내는 일간은 ${dayStem}, 자연에 비유하면 ${day[0]}입니다. 바탕에는 ${day[1]}이 있습니다. 사주 여덟 글자에서는 ${ELEMENTS[dominant].ko}(${ELEMENTS[dominant].hanja}) 기운이 가장 많이 보이고, 십신으로는 ${primaryGroup.label}이 두드러집니다. 쉽게 말해 ${primaryGroup.strength}을 잘 쓰는 편입니다. 이 설명은 운명을 정해 놓는 말이 아니라, 어떤 방식으로 힘을 쓸 때 자연스러운지를 보여 줍니다.`,
+      points: [`타고난 바탕: ${day[1]}`, `잘 쓰는 힘: ${primaryGroup.strength}`, `겉으로 드러나지 않은 오행: ${missingLabel}`],
     },
     personality: {
-      title: '섬세한 관찰을 자기 방식으로 정리합니다',
-      body: `${day[0]}의 기질은 ${day[1]}으로 나타납니다. ${ELEMENTS[dominant].ko} 기운이 많아질수록 ${dominantCopy.strength}이 빠르게 작동하지만, 같은 장점이 과해지면 익숙한 방식에 오래 머물거나 생각과 행동의 속도가 어긋날 수 있습니다. ${primaryGroup.caution} 성격을 고정된 유형으로 단정하기보다, 편안할 때와 압박받을 때의 차이를 관찰하는 것이 이 명식을 더 정확하게 활용하는 방법입니다.`,
-      points: [`강점: ${day[1]}`, `주의: ${dominantCopy.caution}`, `균형 질문: 지금 필요한 것은 확장인가, 정리인가?`],
+      title: '편안할 때와 힘들 때의 모습이 다릅니다',
+      body: `평소에는 ${day[1]}이 장점으로 나타납니다. 여기에 ${ELEMENTS[dominant].ko} 기운이 힘을 보태므로 ${dominantCopy.strength}도 자연스럽습니다. 다만 일이 몰리거나 마음이 급해지면 같은 장점이 고집이나 부담으로 바뀔 수 있습니다. ${dominantCopy.caution} 사주로 성격을 단정하기보다, 여유가 있을 때와 압박을 받을 때 내가 어떻게 달라지는지 살펴보는 편이 정확합니다.`,
+      points: [`평소의 강점: ${day[1]}`, `힘들 때 살필 점: ${dominantCopy.caution}`, '스스로 물어볼 것: 지금은 더 넓혀야 할까, 먼저 정리해야 할까?'],
     },
     career: {
-      title: `${primaryGroup.label}을 쓰는 역할에서 역량이 드러납니다`,
-      body: `직업 이름 하나를 정답으로 고르기보다 어떤 기능을 맡을 때 힘이 나는지 보는 편이 적절합니다. 이 명식은 ${primaryGroup.strength}과 ${dominantCopy.strength}을 함께 사용할 때 몰입도가 높아질 가능성이 있습니다. 특히 ${careerRoles.slice(0, 4).join('·')}처럼 사람과 정보를 연결하면서 결과 기준이 분명한 역할을 우선 탐색해 볼 만합니다. 실제 진로 선택에서는 흥미, 경험, 자격, 노동 조건을 함께 확인해야 합니다.`,
-      points: [`잘 맞는 역할: ${careerRoles.slice(0, 3).join(' · ')}`, `확장 후보: ${careerRoles.slice(3, 6).join(' · ')}`, `선택 기준: 자율성·완료 기준·협업 방식이 분명한가?`],
+      title: '직업 이름보다 어떤 일을 맡느냐가 중요합니다',
+      body: `이 사주는 ${primaryGroup.strength}과 ${dominantCopy.strength}을 함께 쓸 때 능력이 잘 드러납니다. 직업 하나를 정답처럼 고르기보다, 실제로 맡을 역할을 보세요. ${careerRoles.slice(0, 4).join('·')}처럼 해야 할 일과 완성 기준이 분명한 분야부터 살펴볼 만합니다. 같은 직업이라도 조직 분위기와 업무 방식에 따라 맞고 안 맞는 정도가 달라집니다. 흥미와 경험, 자격, 근무 조건까지 확인한 뒤 판단하세요.`,
+      points: [`먼저 살펴볼 역할: ${careerRoles.slice(0, 3).join(' · ')}`, `함께 볼 분야: ${careerRoles.slice(3, 6).join(' · ')}`, '직장을 고를 때: 내가 맡을 일과 평가 기준이 분명한가?'],
     },
     wealth: {
-      title: wealthCount ? '돈의 흐름은 계획과 실행을 연결할 때 안정됩니다' : '재물은 별도 기준을 세울수록 선명해집니다',
-      body: wealthCount ? `재성과 연결되는 글자가 ${wealthCount}개 보여 현실 자원과 성과를 의식하는 흐름이 있습니다. 다만 재성이 있다는 사실이 재산의 크기나 투자 성공을 보장하지는 않습니다. ${primaryGroup.caution} 수입을 늘리는 판단과 지출을 지키는 판단을 분리하고, 큰 결정은 감정이 가라앉은 뒤 예산·기간·최악의 경우를 적어 보는 방식이 이 명식의 실행력을 안정적으로 살립니다.` : `표면 십신에서 재성이 두드러지지 않는다고 재물운이 없다는 뜻은 아닙니다. 돈보다 의미·관계·전문성을 먼저 보는 경향이 있을 수 있으므로, 수입과 지출을 자동으로 기록하고 큰 결제에는 하루의 간격을 두는 식의 외부 기준이 도움이 됩니다. 재무 결정은 사주가 아니라 실제 소득, 부채, 위험 감수 범위를 기준으로 해야 합니다.`,
-      points: [`재성 표면 개수: ${wealthCount}`, '실천: 고정비·변동비·성장비를 나누어 기록하기', '주의: 투자·대출 판단을 사주 해석에 맡기지 않기'],
+      title: wealthCount ? '돈을 버는 힘과 지키는 기준을 따로 세우세요' : '돈 관리는 눈에 보이는 기준을 만드는 것부터 시작합니다',
+      body: wealthCount ? `재물과 현실 성과를 뜻하는 재성이 겉에 ${wealthCount}개 보입니다. 돈과 시간, 사람을 실제 결과로 연결하는 일에 관심이 가기 쉽다는 뜻입니다. 그렇다고 재산이 많아지거나 투자가 성공한다는 보장은 아닙니다. 수입을 늘리는 판단과 지출을 줄이는 판단을 나누세요. 큰돈이 움직일 때는 예산과 기간, 감당할 수 있는 손실부터 적어 보는 편이 좋습니다.` : `겉으로 드러난 재성이 적다고 재물운이 없다는 뜻은 아닙니다. 돈보다 일의 의미나 관계, 전문성을 먼저 생각하는 편일 수 있습니다. 그래서 수입과 지출을 자동으로 기록하고, 큰 결제는 하루 뒤에 다시 보는 것처럼 눈에 보이는 기준을 만드는 일이 중요합니다. 투자와 대출은 사주가 아니라 실제 소득과 부채를 기준으로 판단해야 합니다.`,
+      points: [`겉으로 드러난 재성: ${wealthCount}개`, '해볼 일: 고정비와 생활비, 배움에 쓰는 돈을 나누어 기록하기', '큰돈의 결정: 실제 숫자와 감당할 수 있는 위험부터 확인하기'],
     },
     spouse: {
-      title: spouseCount ? '배우자 관계는 현실적인 약속을 나눌 때 깊어집니다' : '배우자 인연은 운보다 관계의 기준을 세우는 일이 먼저입니다',
-      body: `전통 명리에서는 입력한 성별을 기준으로 ${gender === 'male' ? '재성' : '관성'}을 배우자 흐름의 한 단서로 보며, 이 명식의 표면 분포에는 관련 흐름이 ${spouseCount}개 있습니다. ${spouseCount ? `${spouseGroup.strength}이 관계 안에서도 중요하게 작동할 수 있습니다.` : '표면에 해당 십신이 적다고 결혼이나 인연이 없다는 뜻은 아닙니다.'} 배우자의 성격·직업·만남 시기를 확정하는 방식보다, 갈등 때 대화가 가능한지, 돈과 생활을 어떻게 나눌지, 서로의 독립성을 존중하는지를 실제 관계에서 확인하는 편이 훨씬 중요합니다.`,
-      points: [`전통적 배우자 별: ${gender === 'male' ? '재성' : '관성'} · 표면 ${spouseCount}`, '관계 점검: 애정 표현·경제 분담·가족 경계에 관한 기준 말하기', '주의: 특정 연도에 결혼이나 이별이 확정된다고 해석하지 않기'],
+      title: '좋은 인연은 운보다 생활의 합이 더 중요합니다',
+      body: `전통 명리에서는 ${gender === 'male' ? '재성' : '관성'}을 배우자와의 관계를 살피는 단서로 봅니다. 이 사주에는 그 기운이 겉에 ${spouseCount}개 보입니다. ${spouseCount ? `${spouseGroup.strength}이 연애와 결혼에서도 중요한 기준이 되기 쉽습니다.` : '이 글자가 적다고 인연이 없거나 결혼이 어렵다는 뜻은 아닙니다.'} 상대의 직업이나 만날 시기를 맞히는 것보다, 갈등이 생겼을 때 대화가 되는지, 돈과 집안일을 어떻게 나눌지, 서로의 생활을 존중하는지를 보는 편이 훨씬 중요합니다.`,
+      points: [`배우자 관계를 보는 전통적 단서: ${gender === 'male' ? '재성' : '관성'} ${spouseCount}개`, '꼭 맞춰 볼 것: 애정 표현, 돈, 집안일, 양가 가족의 경계', '사주만으로 결혼이나 이별 시기를 확정하지 않기'],
     },
     family: {
-      title: '가족 안에서는 책임과 자기 경계를 함께 세워야 합니다',
-      body: `가족 관계는 연주와 월주만으로 단정할 수 없지만, 인성 ${resourceCount}과 비겁 ${selfCount}의 배치는 돌봄을 받는 방식과 가족 안에서 자기 몫을 정하는 태도를 돌아보게 합니다. ${resourceCount >= selfCount ? '가족의 조언과 기대를 중요하게 받아들이는 편이라, 자신의 선택을 설명하는 과정이 길어질 수 있습니다.' : '스스로 해결하려는 힘이 강해 가족에게 도움을 요청하는 시점이 늦어질 수 있습니다.'} 가까운 사이라도 책임의 범위, 돈, 돌봄, 연락 빈도를 구체적으로 합의하는 것이 관계를 안정시키는 데 도움이 됩니다.`,
-      points: ['부모·원가족: 기대와 실제로 가능한 역할을 구분하기', '형제·친족: 비교보다 각자의 조건과 경계를 확인하기', '가족 결정: 죄책감이 아니라 지속 가능한 책임을 기준으로 삼기'],
+      title: '가족을 챙기는 일에도 내 몫의 선이 필요합니다',
+      body: `가족 관계를 사주 몇 글자로 단정할 수는 없습니다. 다만 인성 ${resourceCount}개와 비겁 ${selfCount}개를 함께 보면, 가족 안에서 도움을 주고받는 방식을 돌아볼 수 있습니다. ${resourceCount >= selfCount ? '가족의 조언과 기대를 무겁게 받아들여 내 선택을 설명하는 데 힘을 많이 쓸 수 있습니다.' : '스스로 해결하려는 마음이 강해 힘들어도 도움을 늦게 청할 수 있습니다.'} 가까운 가족일수록 돈과 돌봄, 연락, 책임의 범위를 구체적으로 말해 두는 편이 좋습니다.`,
+      points: ['부모와 가족의 기대 중 내가 할 수 있는 몫만 구분하기', '형제나 친척과 비교하기보다 서로 다른 조건을 인정하기', '죄책감보다 오래 지킬 수 있는 책임을 선택하기'],
     },
     children: {
-      title: '자녀와 후배에게는 답보다 성장할 공간을 건네는 편입니다',
-      body: `식상 흐름 ${outputCount}은 표현, 생산, 가르침과 연결해 읽을 수 있습니다. 이것만으로 자녀의 유무나 수를 판단할 수는 없지만, 자녀·학생·후배를 대할 때 자신의 경험을 어떻게 전달하는지 살펴보는 단서가 됩니다. ${outputCount ? '설명하고 결과물을 함께 만드는 방식이 강점이 될 수 있으나, 상대가 스스로 시행착오를 겪을 여지도 남겨 두는 것이 좋습니다.' : '말로 가르치기보다 안정적인 환경과 일관된 태도로 보여 주는 방식이 편할 수 있습니다.'} 실제 양육과 교육에서는 발달 단계와 개인차를 우선해야 합니다.`,
-      points: [`식상 표면 개수: ${outputCount}`, '양육·지도: 지시보다 선택지와 이유를 함께 제시하기', '주의: 자녀의 운명·성취·건강을 부모 사주로 단정하지 않기'],
+      title: '가르쳐 주는 것과 기다려 주는 것의 균형이 필요합니다',
+      body: `표현과 가르침을 뜻하는 식상이 겉에 ${outputCount}개 보입니다. 이것으로 자녀의 유무나 수를 판단할 수는 없습니다. 다만 자녀나 학생, 후배를 대하는 방식을 살피는 단서는 됩니다. ${outputCount ? '설명하고 함께 결과를 만드는 데 강점이 있지만, 상대가 직접 해 보고 실수할 시간도 남겨 두는 편이 좋습니다.' : '말로 앞서 가르치기보다 안정된 환경과 한결같은 태도로 보여 주는 방식이 더 편할 수 있습니다.'} 실제 양육과 교육에서는 나이와 발달 단계, 개인차가 먼저입니다.`,
+      points: [`겉으로 드러난 식상: ${outputCount}개`, '지시만 하기보다 선택지와 그 이유를 함께 알려 주기', '자녀의 성취나 건강을 부모 사주로 단정하지 않기'],
     },
     study: {
-      title: resourceCount ? '깊이 이해한 내용을 자기 언어로 바꿀 때 학습이 오래갑니다' : '학습은 짧은 실행과 반복으로 구조를 만들어야 합니다',
-      body: `인성 흐름 ${resourceCount}은 정보를 받아들이고 체계화하는 방식과 연결됩니다. ${resourceCount ? '자료를 충분히 읽고 맥락을 이해한 뒤 정리하는 능력이 강점이지만, 완벽히 이해할 때까지 시작을 미루지 않도록 출력 기한을 정하는 편이 좋습니다.' : '정보를 오래 붙들기보다 문제를 풀거나 누군가에게 설명하면서 이해를 만드는 방식이 효과적일 수 있습니다.'} 시험·자격·연구 과제에서는 목표 점수, 반복 주기, 피드백 방법을 구체화하면 사주의 추상적 조언을 실제 학습 전략으로 바꿀 수 있습니다.`,
-      points: [`인성 표면 개수: ${resourceCount}`, '추천 방식: 입력→요약→적용 문제→설명의 네 단계로 공부하기', '실천: 주간 단위로 결과물을 남기고 다음 계획을 조정하기'],
+      title: resourceCount ? '이해한 것을 자기 말로 바꿀 때 공부가 오래 남습니다' : '짧게 해 보고 고치는 공부법이 잘 맞습니다',
+      body: `배움과 이해를 뜻하는 인성이 겉에 ${resourceCount}개 보입니다. ${resourceCount ? '자료를 충분히 읽고 전체 맥락을 파악하는 힘이 있습니다. 다만 완전히 이해할 때까지 시작을 미루지 않도록, 정리한 내용을 내놓을 날짜를 먼저 정하는 편이 좋습니다.' : '정보를 오래 읽는 것보다 문제를 풀거나 다른 사람에게 설명하면서 이해를 만드는 방식이 더 잘 맞을 수 있습니다.'} 시험이나 자격 공부에서는 목표 점수와 복습 간격, 틀린 문제를 다시 보는 날짜를 정해 두세요.`,
+      points: [`겉으로 드러난 인성: ${resourceCount}개`, '읽기 → 짧게 요약하기 → 문제에 써 보기 → 말로 설명하기', '일주일마다 결과를 확인하고 다음 계획을 고치기'],
     },
     relationship: {
-      title: '가까운 사이일수록 기대와 경계를 말로 확인하세요',
-      body: `비겁 흐름 ${selfCount}, 관성 흐름 ${authorityCount}의 조합은 관계에서 자율성과 책임을 어떻게 나누는지가 중요하다는 뜻으로 읽을 수 있습니다. ${selfCount >= authorityCount ? '자기 방식과 속도를 존중받을 때 편안하지만, 상대에게도 같은 선택권을 남겨 두어야 합니다.' : '약속과 역할을 중요하게 여기지만, 기준을 맞추는 과정에서 자신의 욕구를 뒤로 미루지 않는 것이 필요합니다.'} 마음을 알아주길 기다리기보다 원하는 도움, 어려운 점, 가능한 범위를 구체적으로 말할수록 관계의 오해가 줄어듭니다.`,
-      points: ['잘 맞는 대화: 감정 평가보다 관찰한 사실부터 말하기', '갈등 점검: 승패보다 다시 합의할 조건 찾기', '관계 기준: 친밀함과 경계를 함께 존중하는가?'],
+      title: '가까운 사이일수록 원하는 것을 말로 알려 주세요',
+      body: `나와 동료를 뜻하는 비겁은 ${selfCount}개, 책임과 규칙을 뜻하는 관성은 ${authorityCount}개입니다. ${selfCount >= authorityCount ? '내 방식과 속도를 존중받을 때 편하지만, 상대도 자기 방식대로 선택할 수 있다는 점을 잊지 않는 편이 좋습니다.' : '약속과 역할을 중요하게 여기지만, 기준을 맞추느라 내 마음을 계속 뒤로 미루지 않도록 주의해야 합니다.'} 상대가 알아주기를 기다리기보다 원하는 도움과 어려운 점, 지금 가능한 범위를 구체적으로 말하세요.`,
+      points: ['감정을 평가하기 전에 실제로 있었던 일부터 말하기', '누가 옳은지보다 다시 맞출 조건을 찾기', '친밀함과 각자의 경계를 함께 지키는 관계인지 살피기'],
     },
     wellbeing: {
-      title: '생각과 활동의 리듬을 번갈아 배치하세요',
-      body: `인성 흐름 ${resourceCount}, 식상 흐름 ${outputCount}의 배치는 받아들이는 시간과 밖으로 표현하는 시간의 균형을 살피게 합니다. ${resourceCount > outputCount ? '정보를 충분히 모은 뒤 움직이려는 편이라 준비가 길어질 때 몸을 먼저 움직이는 짧은 활동이 도움이 될 수 있습니다.' : '표현과 실행이 빠른 편이라 일정 사이에 아무 결과도 만들지 않는 회복 시간을 넣는 것이 좋습니다.'} 이는 질병이나 체질을 진단하는 내용이 아니며, 불편한 증상은 의료 전문가에게 확인해야 합니다.`,
-      points: ['생활 리듬: 집중 시간 뒤에 의도적인 전환 시간 두기', `보완 오행: ${missingLabel}을 색·음식이 아닌 다양한 활동 경험으로 채우기`, '건강 원칙: 증상과 치료 판단은 의료 정보와 전문가 상담을 따르기'],
+      title: '몰입하는 시간과 쉬는 시간을 따로 두세요',
+      body: `인성 ${resourceCount}개와 식상 ${outputCount}개를 비교하면, 받아들이는 시간과 밖으로 표현하는 시간을 어떻게 나눌지 살펴볼 수 있습니다. ${resourceCount > outputCount ? '충분히 알아본 뒤 움직이려는 편이라 준비가 길어질 수 있습니다. 그럴 때는 생각을 더하기보다 잠깐 걷거나 작은 일부터 시작하는 편이 낫습니다.' : '표현과 실행이 빠른 편이라 일정 사이에 아무 결과도 만들지 않는 쉬는 시간을 넣어야 오래 갑니다.'} 이 내용은 질병이나 체질을 진단하는 말이 아닙니다. 불편한 증상은 의료 전문가에게 확인하세요.`,
+      points: ['집중한 뒤에는 일부러 다른 활동으로 전환하기', `겉으로 드러나지 않은 오행: ${missingLabel}`, '증상과 치료는 사주가 아니라 의료 정보와 전문가 판단을 따르기'],
     },
   }
 
@@ -445,7 +457,7 @@ export function analyzeBranchSet(entries) {
 }
 
 function relationSentence(relations, branch) {
-  if (!relations.length) return `${branch}와 비교 대상 사이에 직접 판정된 합·충·형·해·파가 없음`
+  if (!relations.length) return `${branch}와 원국 사이에는 바로 맞물리는 합·충·형·해·파가 없습니다`
   return relations.map(item => `${item.members.join('')} ${item.type}${item.result ? `(${item.result} 기운 가능성)` : ''}`).join(', ')
 }
 
@@ -508,8 +520,8 @@ function buildCycleReading(pillars, ganZhi, startYear, endYear, gender) {
   const signal = fortuneSignals(pillars, ganZhi, gender, '대운')
   const periodLabel = `${startYear}~${endYear}년 ${ganZhi} 대운`
   return {
-    title: `${signal.mainGroup.label}이 10년의 앞줄에 놓이는 시기`,
-    body: `${periodLabel}의 천간 ${signal.stem}은 ${signal.stemGod}, 지지 ${signal.branch}의 주기운은 ${signal.branchGod}으로 읽습니다. 십이운성은 ${signal.twelveStage}으로, ${signal.twelveStageMeaning}입니다. 따라서 ${signal.mainGroup.strength}과 ${signal.branchGroup.strength}이 함께 주요 과제가 됩니다. ${signal.relation}. 이 관계는 특정 사건의 발생을 보장하지 않으며, 10년 동안 어떤 역할과 선택이 반복해서 중요해질 수 있는지를 보여 주는 참고 틀입니다. 기회가 보일 때는 실제 조건을 확인하고, 변동이 클 때는 생활 기반과 관계의 합의를 먼저 정비하는 방식으로 활용하세요.`,
+    title: `앞으로 10년은 ${signal.mainGroup.label}을 배우는 때입니다`,
+    body: `${periodLabel}을 일간과 견주면, 천간 ${signal.stem}은 ${signal.stemGod}, 지지 ${signal.branch}의 중심 기운은 ${signal.branchGod}이 됩니다. 십이운성은 ${signal.twelveStage}입니다. 이는 ${signal.twelveStageMeaning}라는 뜻입니다. 이 10년에는 ${signal.mainGroup.strength}과 ${signal.branchGroup.strength}이 자주 요구될 수 있습니다. 원국과의 관계를 보면 ${signal.relation}. 특정 사건이 반드시 생긴다는 뜻은 아닙니다. 비슷한 선택 앞에 섰을 때 무엇을 먼저 살펴야 하는지를 알려 주는 참고로 보세요.`,
     signals: [`천간 ${signal.stem} · ${signal.stemGod}`, `지지 ${signal.branch} · ${signal.branchGod}`, `십이운성 · ${signal.twelveStage}`, signal.relation],
     evidence: { twelveStage: signal.twelveStage, twelveStageMeaning: signal.twelveStageMeaning, stemRelations: signal.stemRelations, branchRelations: signal.branchRelations },
     areas: luckAreas(signal, periodLabel),
@@ -524,8 +536,8 @@ function buildAnnualReading(pillars, cycleGanZhi, year, age, ganZhi, gender) {
     : `대운의 ${cycleSignal.mainGroup.label} 위에 세운의 ${signal.mainGroup.label}이 더해져 두 과제를 함께 조율해야 합니다.`
   const periodLabel = `${year}년 ${ganZhi} 세운`
   return {
-    title: `${year}년 · ${signal.mainGroup.label}을 구체적인 선택으로 옮기는 해`,
-    summary: `${periodLabel}은 천간 ${signal.stemGod}, 지지의 주기운 ${signal.branchGod}, 십이운성 ${signal.twelveStage}로 읽습니다. ${signal.twelveStageMeaning}에 해당하며, ${cycleLink} ${signal.relation}. 사건을 단정하기보다 그해의 결정에서 무엇을 점검할지 보여 주는 참고로 활용하세요.`,
+    title: `${year}년, ${signal.mainGroup.label}이 눈앞의 과제로 들어옵니다`,
+    summary: `${periodLabel}의 천간은 ${signal.stemGod}, 지지의 중심 기운은 ${signal.branchGod}입니다. 십이운성은 ${signal.twelveStage}으로, ${signal.twelveStageMeaning}라는 뜻입니다. ${cycleLink} 원국과의 관계를 보면 ${signal.relation}. 이 말은 사건을 예언하는 것이 아니라, 그해 중요한 결정을 내릴 때 무엇을 한 번 더 확인해야 하는지 알려 주는 참고입니다.`,
     signals: [`나이 ${age}세`, `세운 ${ganZhi}`, `대운 ${cycleGanZhi}`, `십이운성 ${signal.twelveStage}`, `${signal.stemGod}·${signal.branchGod}`],
     evidence: { twelveStage: signal.twelveStage, twelveStageMeaning: signal.twelveStageMeaning, stemRelations: signal.stemRelations, branchRelations: signal.branchRelations },
     areas: luckAreas(signal, periodLabel),

@@ -1,0 +1,24 @@
+{
+  "model": "gemini-3.1-flash-image",
+  "element": "water",
+  "prompt": "Create a premium vertical smartphone wallpaper symbolizing the Water element in Korean saju as rest, observation, depth, and adapting without losing direction. A deep indigo river curving through quiet misty winter hills at blue hour, layered blue-gray ink washes, subtle silver reflection from unseen ambient light, spacious and contemplative, calm rather than gloomy or stormy. Contemporary Korean ink-wash landscape with subtle mineral pigments, tactile hanji paper texture, editorial art quality, elegant negative space. No sun, no moon, no stars, no celestial bodies, no people, no faces, no animals, no boats, no buildings, no talismans, no religious symbols, no zodiac signs, no letters, no calligraphy, no text, no logo, no frame, no watermark. Compose for a phone lock screen with quiet uncluttered space in the upper third.",
+  "mimeType": "image/jpeg",
+  "usageMetadata": {
+    "promptTokenCount": 167,
+    "candidatesTokenCount": 2054,
+    "totalTokenCount": 2221,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 167
+      }
+    ],
+    "candidatesTokensDetails": [
+      {
+        "modality": "IMAGE",
+        "tokenCount": 1680
+      }
+    ],
+    "serviceTier": "standard"
+  }
+}

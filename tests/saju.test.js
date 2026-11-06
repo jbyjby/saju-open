@@ -10,7 +10,7 @@ import {
   analyzeBranchSet,
   analyzeStemSet,
   getSeasonalHarmony,
-  buildHarmonyWallpaper,
+  getLuckImageGuidance,
   trueSolarTime,
 } from '../src/saju.js'
 
@@ -144,14 +144,20 @@ describe('해석 규칙', () => {
     expect(harmony.rulesetVersion).toBe('seasonal-harmony-2025-table1-v1')
   })
 
-  it('무료 배경 이미지는 휴대폰 비율의 재현 가능한 SVG를 만든다', () => {
-    const harmony = getSeasonalHarmony('甲', '午')
-    const first = buildHarmonyWallpaper(harmony)
-    const second = buildHarmonyWallpaper(harmony)
-    expect(first).toBe(second)
-    expect(first).toContain('width="1080" height="1920"')
-    expect(first).toContain('계절 균형 이미지')
-    expect(first).toContain('효능을 보장하지 않습니다')
+  it('개운 이미지가 필요한 이유를 강점과 보완 행동으로 설명한다', () => {
+    const harmony = getSeasonalHarmony('癸', '巳', {
+      year: { stem: '丙', branch: '寅' }, month: { stem: '癸', branch: '巳' },
+      day: { stem: '癸', branch: '酉' }, time: { stem: '壬', branch: '子' },
+    })
+    const guidance = getLuckImageGuidance(harmony)
+    expect(guidance.strength).toContain('세심')
+    expect(guidance.blindSpot).toContain('생각')
+    expect(guidance.neededElement).toBe('metal')
+    expect(guidance.whyNeeded).toContain('정리')
+    expect(guidance.practice).toHaveLength(3)
+    expect(guidance.definition).toContain('운명을 바꾸는 주문')
+    expect(guidance.saveReason).toContain('휴대폰')
+    expect(guidance.claimsGuaranteedEffect).toBe(false)
   })
 
   it('명식에 따라 6개 영역의 심층 해석을 만든다', () => {
