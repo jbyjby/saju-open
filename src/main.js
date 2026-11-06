@@ -110,7 +110,7 @@ function setupLuckExplorer(data) {
   const currentYear = new Date().getFullYear()
   const initialCycle = Math.max(0, data.luckCycles.findIndex(cycle => currentYear >= cycle.startYear && currentYear <= cycle.endYear))
   explorer.addEventListener('click', event => {
-    const cycleButton = event.target.closest('[data-cycle]')
+    const cycleButton = event.target.closest('button[data-cycle]')
     if (cycleButton) {
       renderCycleDetail(explorer, data, Number(cycleButton.dataset.cycle))
       return
