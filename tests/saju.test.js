@@ -6,6 +6,9 @@ import {
   convertLunarToSolar,
   getElementBalance,
   getTenGod,
+  getTwelveStage,
+  analyzeBranchSet,
+  analyzeStemSet,
   trueSolarTime,
 } from '../src/saju.js'
 
@@ -37,6 +40,8 @@ describe('만세력 계산', () => {
       result.pillars.month.ganZhi,
       result.pillars.day.ganZhi,
     ]).toEqual(['丙寅', '癸巳', '癸酉'])
+    expect(result.evidence.branchRelations)
+      .toEqual(expect.arrayContaining([expect.objectContaining({ type: '육해', members: ['寅', '巳'] })]))
   })
 
   it('시주는 일간과 평균태양시의 시지로 직접 계산한다', () => {
@@ -60,6 +65,46 @@ describe('해석 규칙', () => {
 
   it('갑목 일간에서 편재인 무토를 판정한다', () => {
     expect(getTenGod('甲', '戊')).toBe('편재')
+  })
+
+  it('십이운성은 양간 순행·음간 역행으로 계산한다', () => {
+    expect(getTwelveStage('甲', '亥')).toBe('장생')
+    expect(getTwelveStage('甲', '卯')).toBe('제왕')
+    expect(getTwelveStage('乙', '午')).toBe('장생')
+    expect(getTwelveStage('癸', '卯')).toBe('장생')
+  })
+
+  it('같은 지지를 육합이나 육충으로 오판하지 않는다', () => {
+    expect(analyzeBranchSet([
+      { label: '원국 월지', value: '巳' },
+      { label: '세운 지지', value: '巳' },
+    ])).toEqual([])
+  })
+
+  it('지지의 충·해·파와 합·형을 구분한다', () => {
+    const relations = analyzeBranchSet([
+      { label: 'A', value: '子' }, { label: 'B', value: '午' },
+      { label: 'C', value: '未' }, { label: 'D', value: '酉' },
+    ])
+    expect(relations.some(item => item.type === '육충' && item.members.join('') === '子午')).toBe(true)
+    expect(relations.some(item => item.type === '육해' && item.members.join('') === '子未')).toBe(true)
+    expect(relations.some(item => item.type === '육파' && item.members.join('') === '子酉')).toBe(true)
+  })
+
+  it('삼합·방합·삼형·자형을 판정한다', () => {
+    expect(analyzeBranchSet(['申', '子', '辰'].map((value, i) => ({ label: String(i), value }))))
+      .toEqual(expect.arrayContaining([expect.objectContaining({ type: '삼합', members: ['申', '子', '辰'], result: '수' })]))
+    expect(analyzeBranchSet(['寅', '卯', '辰'].map((value, i) => ({ label: String(i), value }))))
+      .toEqual(expect.arrayContaining([expect.objectContaining({ type: '방합', members: ['寅', '卯', '辰'], result: '목' })]))
+    expect(analyzeBranchSet(['寅', '巳', '申'].map((value, i) => ({ label: String(i), value }))))
+      .toEqual(expect.arrayContaining([expect.objectContaining({ type: '삼형', members: ['寅', '巳', '申'] })]))
+    expect(analyzeBranchSet([{ label: '원국', value: '辰' }, { label: '세운', value: '辰' }]))
+      .toEqual(expect.arrayContaining([expect.objectContaining({ type: '자형', members: ['辰', '辰'] })]))
+  })
+
+  it('천간합은 합화 확정이 아닌 결합 신호로 판정한다', () => {
+    expect(analyzeStemSet([{ label: '일간', value: '甲' }, { label: '대운', value: '己' }]))
+      .toEqual([expect.objectContaining({ type: '천간합', members: ['甲', '己'], result: '토', transformed: false })])
   })
 
   it('명식에 따라 6개 영역의 심층 해석을 만든다', () => {
@@ -91,6 +136,16 @@ describe('해석 규칙', () => {
     })
     expect(result.luckCycles[0].annualYears).toHaveLength(10)
     expect(result.luckCycles[0].annualYears[0]).toMatchObject({ year: 1989, age: 4, ganZhi: '己巳' })
+    expect(result.pillars.year.twelveStage).toBe(getTwelveStage('癸', '寅'))
+    expect(result.luckCycles[0].reading.evidence.twelveStage).toBe('절')
+    expect(result.luckCycles[0].reading.evidence.twelveStageMeaning).toContain('전환')
+    expect(result.luckCycles[0].reading.body).toContain('전환')
+    expect(result.luckCycles[0].reading.evidence.branchRelations)
+      .toEqual(expect.arrayContaining([expect.objectContaining({ type: '육충', members: ['子', '午'] })]))
+    expect(result.luckCycles[0].annualYears[0].reading.evidence.branchRelations
+      .some(item => item.members.join('') === '巳巳')).toBe(false)
+    expect(result.luckCycles[0].annualYears[0].reading.areas.relationship).toContain('압박')
+    expect(result.luckCycles[0].annualYears[0].reading.areas.relationship).toContain('어긋남')
     for (const cycle of result.luckCycles) {
       expect(cycle.reading.body.length).toBeGreaterThan(120)
       expect(Object.keys(cycle.reading.areas)).toEqual(['career', 'wealth', 'spouse', 'relationship', 'wellbeing'])

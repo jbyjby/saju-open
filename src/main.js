@@ -55,7 +55,7 @@ function pillarCard(pillar, key) {
   return `<article class="pillar">
     <p>${pillar.label}</p>
     <div class="characters"><b class="element-${stemElement}">${pillar.stem}</b><b class="element-${branchElement}">${pillar.branch}</b></div>
-    <dl><div><dt>십신</dt><dd>${pillar.tenGod}</dd></div><div><dt>오행</dt><dd>${pillar.wuXing}</dd></div><div><dt>납음</dt><dd>${pillar.naYin}</dd></div></dl>
+    <dl><div><dt>십신</dt><dd>${pillar.tenGod}</dd></div><div><dt>오행</dt><dd>${pillar.wuXing}</dd></div><div><dt>십이운성</dt><dd>${pillar.twelveStage}</dd></div><div><dt>납음</dt><dd>${pillar.naYin}</dd></div></dl>
   </article>`
 }
 
@@ -65,6 +65,30 @@ const fortuneAreaLabels = {
 
 function fortuneAreaCards(areas) {
   return Object.entries(areas).map(([key, body]) => `<article><h5>${fortuneAreaLabels[key]}</h5><p>${body}</p></article>`).join('')
+}
+
+function fortuneEvidence(evidence) {
+  const relations = [...evidence.stemRelations, ...evidence.branchRelations]
+  const items = relations.length
+    ? relations.map(item => `<li><b>${item.type}</b><span>${item.members.join('·')} · ${item.labels.join(' ↔ ')}${item.result ? ` · ${item.result} 기운 가능성` : ''}</span></li>`).join('')
+    : '<li><b>직접 관계</b><span>이번 운과 비교 대상 사이에 판정된 합·충·형·해·파가 없습니다.</span></li>'
+  return `<section class="fortune-evidence">
+    <div><p>판정 근거</p><h5>십이운성 ${evidence.twelveStage}</h5><span class="stage-meaning">${evidence.twelveStageMeaning}</span></div>
+    <ul>${items}</ul>
+    <p class="evidence-note">합·삼합·방합은 관계 신호만 표시합니다. 계절·세력·투간 등 합화 조건을 별도로 충족하지 않으면 특정 오행으로 변했다고 단정하지 않습니다.</p>
+  </section>`
+}
+
+function natalEvidence(evidence) {
+  const relations = [...evidence.stemRelations, ...evidence.branchRelations]
+  const items = relations.length
+    ? relations.map(item => `<li><b>${item.type}</b><span>${item.members.join('·')} · ${item.labels.join(' ↔ ')}${item.result ? ` · ${item.result} 기운 가능성` : ''}</span></li>`).join('')
+    : '<li><b>직접 관계</b><span>원국 네 기둥 사이에 판정된 합·충·형·해·파가 없습니다.</span></li>'
+  return `<section class="fortune-evidence natal-evidence" data-testid="natal-evidence">
+    <div><p>네 기둥 대조</p><h5>원국 관계 근거</h5></div>
+    <ul>${items}</ul>
+    <p class="evidence-note">여러 관계가 함께 성립할 수 있으며, 합은 합화 확정으로 보지 않습니다. 위치와 계절, 세력 조건을 함께 살펴야 합니다.</p>
+  </section>`
 }
 
 function renderAnnualDetail(explorer, annual) {
@@ -77,6 +101,7 @@ function renderAnnualDetail(explorer, annual) {
     <div class="annual-head"><p>${annual.age}세 · ${annual.ganZhi} 세운</p><h4>${annual.reading.title}</h4></div>
     <p class="annual-summary">${annual.reading.summary}</p>
     <div class="fortune-signals">${annual.reading.signals.map(signal => `<span>${signal}</span>`).join('')}</div>
+    ${fortuneEvidence(annual.reading.evidence)}
     <div class="fortune-areas annual-areas">${fortuneAreaCards(annual.reading.areas)}</div>`
 }
 
@@ -93,6 +118,7 @@ function renderCycleDetail(explorer, data, cycleIndex) {
       <header><p>${cycle.startAge}–${cycle.endAge}세 · ${cycle.startYear}–${cycle.endYear}</p><h3>${cycle.ganZhi} 대운 · ${cycle.reading.title}</h3></header>
       <p class="cycle-body">${cycle.reading.body}</p>
       <div class="fortune-signals">${cycle.reading.signals.map(signal => `<span>${signal}</span>`).join('')}</div>
+      ${fortuneEvidence(cycle.reading.evidence)}
       <div class="fortune-areas">${fortuneAreaCards(cycle.reading.areas)}</div>
       <div class="annual-section">
         <div class="annual-title"><p>해마다 달라지는 흐름</p><h4>세운을 선택하세요</h4></div>
@@ -153,6 +179,7 @@ function renderResult(data, timeUnknown) {
       ${timeUnknown ? '<p class="time-warning">태어난 시간을 몰라 낮 12시로 임시 계산했습니다. 시주와 대운 시작 시점은 달라질 수 있습니다.</p>' : ''}
     </div>
     <div class="pillars" data-testid="pillars">${pillars}</div>
+    ${natalEvidence(data.evidence)}
     <section class="interpretation" data-testid="interpretation" aria-labelledby="interpretation-title">
       <header class="interpretation-head">
         <p>명식을 삶의 언어로 풀어보기</p>

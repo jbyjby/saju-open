@@ -257,23 +257,112 @@ function buildInterpretation(pillars, balance, gender) {
     dominant: { key: dominant, ...dominantCopy },
     missing: missing.map(key => ({ key, ...ELEMENT_COPY[key] })),
     tenGodBalance, groupBalance, careerRoles, readings,
-    note: '이 해석은 일간·표면 오행·십신의 주기운을 조합한 입문용 참고입니다. 좋고 나쁨을 단정하거나 미래 사건을 예언하지 않습니다.',
+    note: '이 해석은 일간·표면 오행·십신·십이운성과 명시된 천간·지지 관계 규칙을 조합한 참고입니다. 지장간 전체, 강약, 격국·용신을 종합한 전문 감정은 아니며 미래 사건을 예언하지 않습니다.',
   }
 }
 
-const BRANCH_CLASHES = [['子', '午'], ['丑', '未'], ['寅', '申'], ['卯', '酉'], ['辰', '戌'], ['巳', '亥']]
-const BRANCH_COMBINES = [['子', '丑'], ['寅', '亥'], ['卯', '戌'], ['辰', '酉'], ['巳', '申'], ['午', '未']]
+const TWELVE_STAGES = ['장생', '목욕', '관대', '건록', '제왕', '쇠', '병', '사', '묘', '절', '태', '양']
+const TWELVE_STAGE_MEANINGS = {
+  장생: '새로운 흐름이 시작되고 성장의 기반을 만드는 단계',
+  목욕: '경험과 변화가 늘어 경계를 다시 익히는 단계',
+  관대: '사회적 역할과 형식을 갖추며 밖으로 드러나는 단계',
+  건록: '자기 기준으로 서고 실행력을 안정시키는 단계',
+  제왕: '활동성과 추진력이 정점에 이르러 조절이 필요한 단계',
+  쇠: '확장보다 조정과 역할 분담으로 힘을 배분하는 단계',
+  병: '속도를 낮추고 취약한 부분을 점검·정비하는 단계',
+  사: '하나의 흐름을 마무리하고 다음 방향을 준비하는 단계',
+  묘: '경험과 자원을 안으로 모아 보관·축적하는 단계',
+  절: '기존 연결을 정리하고 새로운 전환을 설계하는 단계',
+  태: '새 가능성을 구상하고 아직 보이지 않는 기반을 준비하는 단계',
+  양: '가능성을 보호하고 시간을 들여 길러 내는 단계',
+}
+const TWELVE_STAGE_OFFSETS = { 甲: 1, 丙: 10, 戊: 10, 庚: 7, 壬: 4, 乙: 6, 丁: 9, 己: 9, 辛: 0, 癸: 3 }
 
-function branchRelations(branch, otherBranches) {
-  const clashes = otherBranches.filter(other => BRANCH_CLASHES.some(pair => pair.includes(branch) && pair.includes(other)))
-  const combines = otherBranches.filter(other => BRANCH_COMBINES.some(pair => pair.includes(branch) && pair.includes(other)))
-  const labels = []
-  if (combines.length) labels.push(`${branch}가 원국의 ${[...new Set(combines)].join('·')}와 합`)
-  if (clashes.length) labels.push(`${branch}가 원국의 ${[...new Set(clashes)].join('·')}와 충`)
-  return labels.length ? labels.join(', ') : `${branch}와 원국 지지 사이에 직접적인 육합·충이 두드러지지 않음`
+export function getTwelveStage(dayStem, branch) {
+  const offset = TWELVE_STAGE_OFFSETS[dayStem]
+  const branchIndex = BRANCHES.indexOf(branch)
+  const stemIndex = STEMS.indexOf(dayStem)
+  if (offset === undefined || branchIndex < 0) throw new Error('십이운성을 계산할 일간과 지지를 확인해 주세요.')
+  return TWELVE_STAGES[mod(offset + (stemIndex % 2 === 0 ? branchIndex : -branchIndex), 12)]
 }
 
-function fortuneSignals(pillars, ganZhi, gender) {
+const STEM_COMBINES = [
+  { members: ['甲', '己'], result: '토' }, { members: ['乙', '庚'], result: '금' },
+  { members: ['丙', '辛'], result: '수' }, { members: ['丁', '壬'], result: '목' },
+  { members: ['戊', '癸'], result: '화' },
+]
+const BRANCH_PAIR_RULES = [
+  { type: '육합', pairs: [['子', '丑'], ['寅', '亥'], ['卯', '戌'], ['辰', '酉'], ['巳', '申'], ['午', '未']] },
+  { type: '육충', pairs: [['子', '午'], ['丑', '未'], ['寅', '申'], ['卯', '酉'], ['辰', '戌'], ['巳', '亥']] },
+  { type: '육해', pairs: [['子', '未'], ['丑', '午'], ['寅', '巳'], ['卯', '辰'], ['申', '亥'], ['酉', '戌']] },
+  { type: '육파', pairs: [['子', '酉'], ['丑', '辰'], ['寅', '亥'], ['卯', '午'], ['巳', '申'], ['未', '戌']] },
+  { type: '형', pairs: [['寅', '巳'], ['巳', '申'], ['申', '寅'], ['丑', '戌'], ['戌', '未'], ['未', '丑'], ['子', '卯']] },
+]
+const BRANCH_GROUP_RULES = [
+  { type: '삼합', members: ['申', '子', '辰'], result: '수' },
+  { type: '삼합', members: ['亥', '卯', '未'], result: '목' },
+  { type: '삼합', members: ['寅', '午', '戌'], result: '화' },
+  { type: '삼합', members: ['巳', '酉', '丑'], result: '금' },
+  { type: '방합', members: ['寅', '卯', '辰'], result: '목' },
+  { type: '방합', members: ['巳', '午', '未'], result: '화' },
+  { type: '방합', members: ['申', '酉', '戌'], result: '금' },
+  { type: '방합', members: ['亥', '子', '丑'], result: '수' },
+  { type: '삼형', members: ['寅', '巳', '申'] },
+  { type: '삼형', members: ['丑', '戌', '未'] },
+]
+const SELF_PUNISHMENT = new Set(['辰', '午', '酉', '亥'])
+
+function isPair(a, b, pair) {
+  return a !== b && ((a === pair[0] && b === pair[1]) || (a === pair[1] && b === pair[0]))
+}
+
+export function analyzeStemSet(entries) {
+  const relations = []
+  for (let i = 0; i < entries.length; i += 1) {
+    for (let j = i + 1; j < entries.length; j += 1) {
+      const rule = STEM_COMBINES.find(item => isPair(entries[i].value, entries[j].value, item.members))
+      if (rule) relations.push({
+        type: '천간합', members: rule.members, labels: [entries[i].label, entries[j].label],
+        result: rule.result, transformed: false,
+      })
+    }
+  }
+  return relations
+}
+
+export function analyzeBranchSet(entries) {
+  const relations = []
+  for (let i = 0; i < entries.length; i += 1) {
+    for (let j = i + 1; j < entries.length; j += 1) {
+      const a = entries[i]
+      const b = entries[j]
+      for (const rule of BRANCH_PAIR_RULES) {
+        const pair = rule.pairs.find(candidate => isPair(a.value, b.value, candidate))
+        if (pair) relations.push({ type: rule.type, members: pair, labels: [a.label, b.label] })
+      }
+      if (a.value === b.value && SELF_PUNISHMENT.has(a.value)) {
+        relations.push({ type: '자형', members: [a.value, b.value], labels: [a.label, b.label] })
+      }
+    }
+  }
+  for (const rule of BRANCH_GROUP_RULES) {
+    if (rule.members.every(member => entries.some(entry => entry.value === member))) {
+      relations.push({
+        type: rule.type, members: rule.members,
+        labels: rule.members.map(member => entries.find(entry => entry.value === member).label),
+        ...(rule.result ? { result: rule.result, transformed: false } : {}),
+      })
+    }
+  }
+  return relations
+}
+
+function relationSentence(relations, branch) {
+  if (!relations.length) return `${branch}와 비교 대상 사이에 직접 판정된 합·충·형·해·파가 없음`
+  return relations.map(item => `${item.members.join('')} ${item.type}${item.result ? `(${item.result} 기운 가능성)` : ''}`).join(', ')
+}
+
+function fortuneSignals(pillars, ganZhi, gender, contextLabel = '운', extraGanZhi = []) {
   const [stem, branch] = [...ganZhi]
   const dayStem = pillars.day.stem
   const stemGod = getTenGod(dayStem, stem)
@@ -281,12 +370,38 @@ function fortuneSignals(pillars, ganZhi, gender) {
   const mainGroupKey = tenGodGroup(stemGod)
   const branchGroupKey = tenGodGroup(branchGod)
   const spouseGroupKey = gender === 'male' ? 'wealth' : 'authority'
+  const pillarLabels = { year: '원국 년주', month: '원국 월주', day: '원국 일주', time: '원국 시주' }
+  const natalStems = Object.entries(pillars).map(([key, pillar]) => ({ label: `${pillarLabels[key]} 천간`, value: pillar.stem }))
+  const natalBranches = Object.entries(pillars).map(([key, pillar]) => ({ label: `${pillarLabels[key]} 지지`, value: pillar.branch }))
+  const extraStems = extraGanZhi.map(item => ({ label: `${item.label} 천간`, value: [...item.ganZhi][0] }))
+  const extraBranches = extraGanZhi.map(item => ({ label: `${item.label} 지지`, value: [...item.ganZhi][1] }))
+  const stemLabel = `${contextLabel} 천간`
+  const branchLabel = `${contextLabel} 지지`
+  const stemRelations = analyzeStemSet([...natalStems, ...extraStems, { label: stemLabel, value: stem }])
+    .filter(item => item.labels.includes(stemLabel))
+  const branchRelations = analyzeBranchSet([...natalBranches, ...extraBranches, { label: branchLabel, value: branch }])
+    .filter(item => item.labels.includes(branchLabel))
+  const twelveStage = getTwelveStage(dayStem, branch)
   return {
     stem, branch, stemGod, branchGod, mainGroupKey, branchGroupKey, spouseGroupKey,
     mainGroup: TEN_GOD_GROUPS[mainGroupKey], branchGroup: TEN_GOD_GROUPS[branchGroupKey],
-    relation: branchRelations(branch, Object.values(pillars).map(p => p.branch)),
+    twelveStage, twelveStageMeaning: TWELVE_STAGE_MEANINGS[twelveStage],
+    stemRelations, branchRelations,
+    relation: relationSentence([...stemRelations, ...branchRelations], branch),
     spouseActive: mainGroupKey === spouseGroupKey || branchGroupKey === spouseGroupKey,
   }
+}
+
+function relationGuidance(signal) {
+  const types = new Set([...signal.stemRelations, ...signal.branchRelations].map(item => item.type))
+  const guidance = []
+  if (types.has('천간합')) guidance.push('천간합은 역할이나 의제가 서로 얽혀 조율 지점이 생기는 신호입니다.')
+  if (['육합', '삼합', '방합'].some(type => types.has(type))) guidance.push('합 계열은 연결과 결집 가능성을 보이지만 합화나 좋은 결과를 자동으로 뜻하지 않습니다.')
+  if (types.has('육충')) guidance.push('충은 기존 배치가 움직이거나 맞서는 지점이므로 변경 범위와 대응 순서를 확인해야 합니다.')
+  if (['형', '삼형', '자형'].some(type => types.has(type))) guidance.push('형 계열은 같은 문제를 반복하거나 기준이 압박으로 작동하는 양상을 점검하게 합니다.')
+  if (types.has('육해')) guidance.push('해는 겉으로 드러난 충돌보다 기대와 실제가 어긋남으로써 생기는 불편을 살피게 합니다.')
+  if (types.has('육파')) guidance.push('파는 이미 합의한 방식이나 구조에 작은 균열이 생겨 다시 조정할 필요를 보여 줍니다.')
+  return guidance.length ? guidance.join(' ') : '직접 판정된 관계가 없을 때는 십신과 십이운성의 흐름을 중심으로 실제 상황을 점검합니다.'
 }
 
 function luckAreas(signal, periodLabel) {
@@ -297,33 +412,35 @@ function luckAreas(signal, periodLabel) {
     career: `${signal.stemGod}과 ${signal.branchGod}의 조합은 ${signal.mainGroup.strength}을 일에서 요구합니다. 새 역할은 직함보다 책임 범위, 평가 기준, 협업 구조를 확인하고 선택해야 이 운의 장점을 실제 경력으로 연결할 수 있습니다.`,
     wealth: `${periodLabel}의 재물 흐름은 ${signal.mainGroupKey === 'wealth' || signal.branchGroupKey === 'wealth' ? '성과와 자원 관리가 전면에 놓이는 편' : '주된 활동을 재무 결과로 바꾸는 별도 장치가 필요한 편'}입니다. 수입·지출·부채·비상금을 분리하고, 큰 계약과 투자는 사주보다 실제 숫자와 전문가 검토를 우선해야 합니다.`,
     spouse: spouseText,
-    relationship: `${signal.relation}. 합은 무조건 좋은 사건, 충은 무조건 나쁜 사건이 아니라 관계 방식과 환경이 재조정되는 신호로 봅니다. 이 시기에는 기대, 역할, 연락, 돈의 경계를 말로 확인해야 오해를 줄일 수 있습니다.`,
+    relationship: `${signal.relation}. ${relationGuidance(signal)} 이 시기에는 기대, 역할, 연락, 돈의 경계를 말로 확인해야 오해를 줄일 수 있습니다.`,
     wellbeing: `${signal.mainGroup.caution} 일정이 몰릴 때 수면·식사·활동 기록으로 자신의 리듬을 확인하세요. 이 풀이는 질병을 예측하거나 진단하지 않으며, 지속되는 증상은 의료 전문가의 평가를 따라야 합니다.`,
   }
 }
 
 function buildCycleReading(pillars, ganZhi, startYear, endYear, gender) {
-  const signal = fortuneSignals(pillars, ganZhi, gender)
+  const signal = fortuneSignals(pillars, ganZhi, gender, '대운')
   const periodLabel = `${startYear}~${endYear}년 ${ganZhi} 대운`
   return {
     title: `${signal.mainGroup.label}이 10년의 앞줄에 놓이는 시기`,
-    body: `${periodLabel}의 천간 ${signal.stem}은 ${signal.stemGod}, 지지 ${signal.branch}의 주기운은 ${signal.branchGod}으로 읽습니다. 따라서 ${signal.mainGroup.strength}과 ${signal.branchGroup.strength}이 함께 주요 과제가 됩니다. ${signal.relation}. 이 관계는 특정 사건의 발생을 보장하지 않으며, 10년 동안 어떤 역할과 선택이 반복해서 중요해질 수 있는지를 보여 주는 참고 틀입니다. 기회가 보일 때는 실제 조건을 확인하고, 변동이 클 때는 생활 기반과 관계의 합의를 먼저 정비하는 방식으로 활용하세요.`,
-    signals: [`천간 ${signal.stem} · ${signal.stemGod}`, `지지 ${signal.branch} · ${signal.branchGod}`, signal.relation],
+    body: `${periodLabel}의 천간 ${signal.stem}은 ${signal.stemGod}, 지지 ${signal.branch}의 주기운은 ${signal.branchGod}으로 읽습니다. 십이운성은 ${signal.twelveStage}으로, ${signal.twelveStageMeaning}입니다. 따라서 ${signal.mainGroup.strength}과 ${signal.branchGroup.strength}이 함께 주요 과제가 됩니다. ${signal.relation}. 이 관계는 특정 사건의 발생을 보장하지 않으며, 10년 동안 어떤 역할과 선택이 반복해서 중요해질 수 있는지를 보여 주는 참고 틀입니다. 기회가 보일 때는 실제 조건을 확인하고, 변동이 클 때는 생활 기반과 관계의 합의를 먼저 정비하는 방식으로 활용하세요.`,
+    signals: [`천간 ${signal.stem} · ${signal.stemGod}`, `지지 ${signal.branch} · ${signal.branchGod}`, `십이운성 · ${signal.twelveStage}`, signal.relation],
+    evidence: { twelveStage: signal.twelveStage, twelveStageMeaning: signal.twelveStageMeaning, stemRelations: signal.stemRelations, branchRelations: signal.branchRelations },
     areas: luckAreas(signal, periodLabel),
   }
 }
 
 function buildAnnualReading(pillars, cycleGanZhi, year, age, ganZhi, gender) {
-  const signal = fortuneSignals(pillars, ganZhi, gender)
-  const cycleSignal = fortuneSignals(pillars, cycleGanZhi, gender)
+  const signal = fortuneSignals(pillars, ganZhi, gender, '세운', [{ label: '대운', ganZhi: cycleGanZhi }])
+  const cycleSignal = fortuneSignals(pillars, cycleGanZhi, gender, '대운')
   const cycleLink = signal.mainGroupKey === cycleSignal.mainGroupKey
     ? `대운과 세운이 모두 ${signal.mainGroup.label}을 강조해 같은 주제가 반복될 수 있습니다.`
     : `대운의 ${cycleSignal.mainGroup.label} 위에 세운의 ${signal.mainGroup.label}이 더해져 두 과제를 함께 조율해야 합니다.`
   const periodLabel = `${year}년 ${ganZhi} 세운`
   return {
     title: `${year}년 · ${signal.mainGroup.label}을 구체적인 선택으로 옮기는 해`,
-    summary: `${periodLabel}은 천간 ${signal.stemGod}, 지지의 주기운 ${signal.branchGod}으로 읽습니다. ${cycleLink} ${signal.relation}. 사건을 단정하기보다 그해의 결정에서 무엇을 점검할지 보여 주는 참고로 활용하세요.`,
-    signals: [`나이 ${age}세`, `세운 ${ganZhi}`, `대운 ${cycleGanZhi}`, `${signal.stemGod}·${signal.branchGod}`],
+    summary: `${periodLabel}은 천간 ${signal.stemGod}, 지지의 주기운 ${signal.branchGod}, 십이운성 ${signal.twelveStage}로 읽습니다. ${signal.twelveStageMeaning}에 해당하며, ${cycleLink} ${signal.relation}. 사건을 단정하기보다 그해의 결정에서 무엇을 점검할지 보여 주는 참고로 활용하세요.`,
+    signals: [`나이 ${age}세`, `세운 ${ganZhi}`, `대운 ${cycleGanZhi}`, `십이운성 ${signal.twelveStage}`, `${signal.stemGod}·${signal.branchGod}`],
+    evidence: { twelveStage: signal.twelveStage, twelveStageMeaning: signal.twelveStageMeaning, stemRelations: signal.stemRelations, branchRelations: signal.branchRelations },
     areas: luckAreas(signal, periodLabel),
   }
 }
@@ -365,6 +482,12 @@ export function calculateSaju(input) {
     day: directPillarData(directDay, '일주', [...directDay][0], libraryDay),
     time: directPillarData(directTime, '시주', [...directDay][0], libraryTime),
   }
+  for (const pillar of Object.values(pillars)) pillar.twelveStage = getTwelveStage(pillars.day.stem, pillar.branch)
+  const pillarLabels = { year: '년주', month: '월주', day: '일주', time: '시주' }
+  const evidence = {
+    stemRelations: analyzeStemSet(Object.entries(pillars).map(([key, pillar]) => ({ label: `${pillarLabels[key]} 천간`, value: pillar.stem }))),
+    branchRelations: analyzeBranchSet(Object.entries(pillars).map(([key, pillar]) => ({ label: `${pillarLabels[key]} 지지`, value: pillar.branch }))),
+  }
   const balance = getElementBalance(Object.values(pillars).map(p => p.ganZhi))
   const yun = eightChar.getYun(gender === 'male' ? 1 : 0)
   const luckCycles = yun.getDaYun(9).slice(1).map(item => {
@@ -387,7 +510,7 @@ export function calculateSaju(input) {
   })
   return {
     entered, solarDate, corrected, timeZone: getKoreanOffsetLabel(year, month, day, hour, minute),
-    lunarText: lunar.toString(), pillars, balance, luckCycles,
+    lunarText: lunar.toString(), pillars, evidence, balance, luckCycles,
     interpretation: buildInterpretation(pillars, balance, gender),
   }
 }
