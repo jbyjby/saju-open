@@ -13,6 +13,41 @@ export const ELEMENTS = {
   water: { ko: '수', hanja: '水', color: '#355f78' },
 }
 
+const HIDDEN_STEMS = {
+  子: ['癸'], 丑: ['己', '癸', '辛'], 寅: ['甲', '丙', '戊'], 卯: ['乙'],
+  辰: ['戊', '乙', '癸'], 巳: ['丙', '戊', '庚'], 午: ['丁', '己'], 未: ['己', '丁', '乙'],
+  申: ['庚', '壬', '戊'], 酉: ['辛'], 戌: ['戊', '辛', '丁'], 亥: ['壬', '甲'],
+}
+
+// 함혜수(2025), <표 1> 월령별 십간의 상생 배합. 각 배열은 선용→후용→보좌 순서다.
+const SEASONAL_HARMONY_STEMS = {
+  甲: { 寅: ['丙', '癸'], 卯: ['庚', '丁', '戊'], 辰: ['庚', '丁', '壬'], 巳: ['癸', '丁', '庚'], 午: ['癸', '丁', '庚'], 未: ['癸', '庚', '丁'], 申: ['庚', '丁', '壬'], 酉: ['庚', '丁', '丙'], 戌: ['庚', '丁', '癸'], 亥: ['庚', '丁', '戊'], 子: ['丁', '庚', '丙'], 丑: ['丁', '庚', '丙'] },
+  乙: { 寅: ['丙', '癸'], 卯: ['丙', '癸'], 辰: ['癸', '丙', '戊'], 巳: ['癸', '辛'], 午: ['癸', '丙'], 未: ['癸', '丙'], 申: ['丙', '癸', '己'], 酉: ['癸', '丙', '丁'], 戌: ['癸', '辛'], 亥: ['丙', '戊'], 子: ['丙', '戊'], 丑: ['丙', '甲'] },
+  丙: { 寅: ['壬', '庚'], 卯: ['壬', '己', '庚'], 辰: ['壬', '甲'], 巳: ['壬', '庚', '癸'], 午: ['壬', '庚'], 未: ['壬', '庚'], 申: ['壬', '戊'], 酉: ['壬', '癸'], 戌: ['甲', '壬'], 亥: ['甲', '戊', '庚'], 子: ['壬', '戊', '己'], 丑: ['壬', '甲'] },
+  丁: { 寅: ['甲', '庚', '壬'], 卯: ['庚', '甲'], 辰: ['甲', '庚'], 巳: ['甲', '庚'], 午: ['壬', '庚', '癸'], 未: ['甲', '壬', '庚'], 申: ['甲', '丙'], 酉: ['甲', '庚', '丙'], 戌: ['甲', '庚'], 亥: ['甲', '庚'], 子: ['甲', '庚'], 丑: ['甲', '庚'] },
+  戊: { 寅: ['丙', '甲', '癸'], 卯: ['丙', '甲', '癸'], 辰: ['甲', '丙', '癸'], 巳: ['甲', '丙', '癸'], 午: ['壬', '甲', '丙'], 未: ['癸', '丙', '甲'], 申: ['丙', '癸', '甲'], 酉: ['丙', '癸'], 戌: ['甲', '丙', '癸'], 亥: ['甲', '丙'], 子: ['丙', '甲'], 丑: ['丙', '甲'] },
+  己: { 寅: ['丙', '庚', '甲'], 卯: ['甲', '癸', '丙'], 辰: ['丙', '癸', '甲'], 巳: ['癸', '丙', '辛'], 午: ['癸', '丙', '辛'], 未: ['癸', '丙', '辛'], 申: ['丙', '癸'], 酉: ['丙', '癸'], 戌: ['甲', '丙', '癸'], 亥: ['丙', '甲', '戊'], 子: ['丙', '甲', '戊'], 丑: ['丙', '甲', '戊'] },
+  庚: { 寅: ['丙', '甲', '丁'], 卯: ['丁', '甲', '庚'], 辰: ['甲', '丁', '壬'], 巳: ['壬', '戊', '丙'], 午: ['壬', '癸'], 未: ['丁', '甲'], 申: ['丁', '甲'], 酉: ['丁', '甲', '丙'], 戌: ['甲', '壬'], 亥: ['丁', '丙', '甲'], 子: ['丁', '甲', '丙'], 丑: ['丙', '丁', '甲'] },
+  辛: { 寅: ['己', '壬', '庚'], 卯: ['壬', '甲'], 辰: ['壬', '甲'], 巳: ['壬', '甲', '癸'], 午: ['壬', '己', '癸'], 未: ['壬', '庚', '甲'], 申: ['壬', '甲', '戊'], 酉: ['壬', '甲'], 戌: ['壬', '甲'], 亥: ['壬', '丙'], 子: ['丙', '戊', '壬'], 丑: ['丙', '壬', '戊'] },
+  壬: { 寅: ['庚', '丙', '戊'], 卯: ['戊', '辛', '庚'], 辰: ['甲', '庚'], 巳: ['壬', '辛', '庚'], 午: ['癸', '庚', '辛'], 未: ['辛', '甲'], 申: ['戊', '丁'], 酉: ['甲', '庚'], 戌: ['甲', '丙'], 亥: ['戊', '丙', '庚'], 子: ['戊', '丙'], 丑: ['丙', '丁', '甲'] },
+  癸: { 寅: ['辛', '丙'], 卯: ['庚', '辛'], 辰: ['丙', '辛', '甲'], 巳: ['辛', '庚'], 午: ['庚', '辛', '壬'], 未: ['庚', '辛', '壬'], 申: ['丁', '甲'], 酉: ['辛', '丙'], 戌: ['辛', '甲', '癸'], 亥: ['庚', '辛', '丁'], 子: ['丙', '辛'], 丑: ['丙', '丁'] },
+}
+
+const MONTH_CLIMATE = {
+  寅: '초봄의 남은 찬 기운', 卯: '봄의 생장 기운', 辰: '봄에서 여름으로 넘어가는 습한 전환',
+  巳: '초여름의 열기', 午: '한여름의 강한 열기', 未: '여름 끝의 열기와 습기',
+  申: '가을로 접어드는 건조한 기운', 酉: '가을의 건조하고 서늘한 기운', 戌: '가을 끝의 건조한 전환',
+  亥: '초겨울의 차고 습한 기운', 子: '한겨울의 강한 찬 기운', 丑: '겨울 끝의 차고 습한 기운',
+}
+
+const ELEMENT_WALLPAPER = {
+  wood: { light: '#c7dfca', dark: '#315d49', accent: '#75a27f', symbol: '새싹과 숲' },
+  fire: { light: '#f4d1b8', dark: '#8b3f33', accent: '#d87554', symbol: '햇빛과 온기' },
+  earth: { light: '#e4d2ad', dark: '#665033', accent: '#b38a52', symbol: '대지와 산' },
+  metal: { light: '#e1e3e6', dark: '#4e555e', accent: '#929aa4', symbol: '빛과 결' },
+  water: { light: '#bfd8e3', dark: '#244d64', accent: '#5f91aa', symbol: '물결과 깊이' },
+}
+
 const STEM_ELEMENT = {
   甲: 'wood', 乙: 'wood', 丙: 'fire', 丁: 'fire', 戊: 'earth', 己: 'earth',
   庚: 'metal', 辛: 'metal', 壬: 'water', 癸: 'water',
@@ -21,6 +56,58 @@ const BRANCH_ELEMENT = {
   寅: 'wood', 卯: 'wood', 巳: 'fire', 午: 'fire', 辰: 'earth', 戌: 'earth',
   丑: 'earth', 未: 'earth', 申: 'metal', 酉: 'metal', 亥: 'water', 子: 'water',
 }
+
+export function getSeasonalHarmony(dayStem, monthBranch, pillars = null) {
+  const stems = SEASONAL_HARMONY_STEMS[dayStem]?.[monthBranch]
+  if (!stems) throw new Error('계절 균형을 계산할 일간과 월령을 확인해 주세요.')
+  const pillarList = pillars ? Object.values(pillars) : []
+  const visibleStems = new Set(pillarList.map(pillar => pillar.stem))
+  const hiddenStems = new Set(pillarList.flatMap(pillar => HIDDEN_STEMS[pillar.branch] || []))
+  return {
+    label: '계절 균형 참고',
+    rulesetVersion: 'seasonal-harmony-2025-table1-v1',
+    evidenceId: `seasonal-harmony:${dayStem}:${monthBranch}`,
+    dayStem, monthBranch, climate: MONTH_CLIMATE[monthBranch],
+    candidates: stems.map((stem, index) => {
+      const element = STEM_ELEMENT[stem]
+      return {
+        order: index + 1, role: ['선용', '후용', '보좌'][index], stem,
+        evidenceId: `seasonal-harmony:${dayStem}:${monthBranch}:${index + 1}:${stem}`,
+        element, elementKo: ELEMENTS[element].ko, elementHanja: ELEMENTS[element].hanja,
+        visible: visibleStems.has(stem), hidden: hiddenStems.has(stem),
+      }
+    }),
+    source: '함혜수(2025), 「『난강망』의 새로운 해석, 조화용신론의 이론적 고찰」 <표 1>',
+    note: '일간과 월령을 중심으로 본 계절 균형 참고이며, 억부·격국·합화까지 종합한 용신 확정이 아닙니다.',
+  }
+}
+
+export function buildHarmonyWallpaper(harmony) {
+  const primary = ELEMENT_WALLPAPER[harmony.candidates[0].element]
+  const secondary = ELEMENT_WALLPAPER[harmony.candidates[1]?.element || harmony.candidates[0].element]
+  const stems = harmony.candidates.map(item => item.stem).join(' · ')
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920" role="img" aria-label="계절 균형 이미지">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="${primary.light}"/><stop offset="1" stop-color="${secondary.dark}"/></linearGradient>
+    <radialGradient id="light"><stop stop-color="#fff" stop-opacity=".88"/><stop offset="1" stop-color="${primary.accent}" stop-opacity=".08"/></radialGradient>
+  </defs>
+  <rect width="1080" height="1920" fill="url(#sky)"/>
+  <circle cx="760" cy="390" r="250" fill="url(#light)"/>
+  <path d="M0 1260 C210 1110 330 1370 540 1210 S870 1090 1080 1260 V1920 H0Z" fill="${primary.dark}" opacity=".62"/>
+  <path d="M0 1450 C240 1300 420 1540 650 1390 S900 1360 1080 1460 V1920 H0Z" fill="${secondary.dark}" opacity=".72"/>
+  <path d="M80 1590 C310 1490 470 1710 710 1570 S940 1580 1040 1630" fill="none" stroke="${primary.light}" stroke-width="8" opacity=".55"/>
+  <g fill="#fff" font-family="Pretendard, Apple SD Gothic Neo, sans-serif">
+    <text x="80" y="130" font-size="30" letter-spacing="8" opacity=".78">SAI · SEASONAL BALANCE</text>
+    <text x="80" y="230" font-size="62" font-weight="700">계절 균형 이미지</text>
+    <text x="80" y="305" font-size="34" opacity=".86">${harmony.dayStem} 일간 · ${harmony.monthBranch}월령</text>
+    <text x="80" y="1640" font-size="30" opacity=".78">상징 기운</text>
+    <text x="80" y="1710" font-size="58" font-weight="700">${stems}</text>
+    <text x="80" y="1770" font-size="28" opacity=".84">${primary.symbol} · ${secondary.symbol}</text>
+    <text x="80" y="1840" font-size="23" opacity=".72">이 이미지는 생활 의도를 환기하는 상징이며 효능을 보장하지 않습니다.</text>
+  </g>
+</svg>`
+}
+
 const STEM_YANG = { 甲: true, 乙: false, 丙: true, 丁: false, 戊: true, 己: false, 庚: true, 辛: false, 壬: true, 癸: false }
 const GENERATES = { wood: 'fire', fire: 'earth', earth: 'metal', metal: 'water', water: 'wood' }
 const CONTROLS = { wood: 'earth', earth: 'water', water: 'fire', fire: 'metal', metal: 'wood' }
@@ -483,6 +570,7 @@ export function calculateSaju(input) {
     time: directPillarData(directTime, '시주', [...directDay][0], libraryTime),
   }
   for (const pillar of Object.values(pillars)) pillar.twelveStage = getTwelveStage(pillars.day.stem, pillar.branch)
+  const seasonalHarmony = getSeasonalHarmony(pillars.day.stem, pillars.month.branch, pillars)
   const pillarLabels = { year: '년주', month: '월주', day: '일주', time: '시주' }
   const evidence = {
     stemRelations: analyzeStemSet(Object.entries(pillars).map(([key, pillar]) => ({ label: `${pillarLabels[key]} 천간`, value: pillar.stem }))),
@@ -510,7 +598,7 @@ export function calculateSaju(input) {
   })
   return {
     entered, solarDate, corrected, timeZone: getKoreanOffsetLabel(year, month, day, hour, minute),
-    lunarText: lunar.toString(), pillars, evidence, balance, luckCycles,
+    lunarText: lunar.toString(), pillars, evidence, balance, seasonalHarmony, luckCycles,
     interpretation: buildInterpretation(pillars, balance, gender),
   }
 }

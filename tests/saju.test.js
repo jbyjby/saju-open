@@ -9,6 +9,8 @@ import {
   getTwelveStage,
   analyzeBranchSet,
   analyzeStemSet,
+  getSeasonalHarmony,
+  buildHarmonyWallpaper,
   trueSolarTime,
 } from '../src/saju.js'
 
@@ -40,6 +42,8 @@ describe('만세력 계산', () => {
       result.pillars.month.ganZhi,
       result.pillars.day.ganZhi,
     ]).toEqual(['丙寅', '癸巳', '癸酉'])
+    expect(result.seasonalHarmony.candidates.map(item => item.stem)).toEqual(['辛', '庚'])
+    expect(result.seasonalHarmony.monthBranch).toBe('巳')
     expect(result.evidence.branchRelations)
       .toEqual(expect.arrayContaining([expect.objectContaining({ type: '육해', members: ['寅', '巳'] })]))
   })
@@ -105,6 +109,49 @@ describe('해석 규칙', () => {
   it('천간합은 합화 확정이 아닌 결합 신호로 판정한다', () => {
     expect(analyzeStemSet([{ label: '일간', value: '甲' }, { label: '대운', value: '己' }]))
       .toEqual([expect.objectContaining({ type: '천간합', members: ['甲', '己'], result: '토', transformed: false })])
+  })
+
+  it('일간과 월령의 120개 조합에 선용·후용·보좌 글자를 제공한다', () => {
+    const stems = [...'甲乙丙丁戊己庚辛壬癸']
+    const months = [...'寅卯辰巳午未申酉戌亥子丑']
+    const all = stems.flatMap(dayStem => months.map(monthBranch => getSeasonalHarmony(dayStem, monthBranch)))
+    expect(all).toHaveLength(120)
+    for (const item of all) {
+      expect(item.candidates.length).toBeGreaterThanOrEqual(1)
+      expect(item.candidates.length).toBeLessThanOrEqual(3)
+      expect(item.candidates.every(candidate => stems.includes(candidate.stem))).toBe(true)
+    }
+    const springWood = getSeasonalHarmony('甲', '寅').candidates
+    expect(springWood.map(item => item.stem)).toEqual(['丙', '癸'])
+    expect(springWood.map(item => [item.element, item.elementKo, item.elementHanja])).toEqual([
+      ['fire', '화', '火'],
+      ['water', '수', '水'],
+    ])
+    expect(getSeasonalHarmony('甲', '午').candidates.map(item => item.stem)).toEqual(['癸', '丁', '庚'])
+    expect(getSeasonalHarmony('癸', '丑').candidates.map(item => item.stem)).toEqual(['丙', '丁'])
+  })
+
+  it('계절 균형 후보가 원국 천간과 지장간에 있는지 구분한다', () => {
+    const harmony = getSeasonalHarmony('甲', '寅', {
+      year: { stem: '丙', branch: '子' }, month: { stem: '戊', branch: '寅' },
+      day: { stem: '甲', branch: '辰' }, time: { stem: '辛', branch: '丑' },
+    })
+    expect(harmony.candidates[0]).toMatchObject({ stem: '丙', visible: true, hidden: true })
+    expect(harmony.candidates[1]).toMatchObject({ stem: '癸', visible: false, hidden: true })
+    expect(harmony.label).toBe('계절 균형 참고')
+    expect(harmony.evidenceId).toBe('seasonal-harmony:甲:寅')
+    expect(harmony.candidates[0].evidenceId).toBe('seasonal-harmony:甲:寅:1:丙')
+    expect(harmony.rulesetVersion).toBe('seasonal-harmony-2025-table1-v1')
+  })
+
+  it('무료 배경 이미지는 휴대폰 비율의 재현 가능한 SVG를 만든다', () => {
+    const harmony = getSeasonalHarmony('甲', '午')
+    const first = buildHarmonyWallpaper(harmony)
+    const second = buildHarmonyWallpaper(harmony)
+    expect(first).toBe(second)
+    expect(first).toContain('width="1080" height="1920"')
+    expect(first).toContain('계절 균형 이미지')
+    expect(first).toContain('효능을 보장하지 않습니다')
   })
 
   it('명식에 따라 6개 영역의 심층 해석을 만든다', () => {

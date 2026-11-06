@@ -1,4 +1,4 @@
-import { calculateSaju, ELEMENTS } from './saju.js'
+import { calculateSaju, ELEMENTS, buildHarmonyWallpaper } from './saju.js'
 
 const form = document.querySelector('#birth-form')
 const result = document.querySelector('#result')
@@ -151,6 +151,87 @@ function setupLuckExplorer(data) {
   renderCycleDetail(explorer, data, initialCycle)
 }
 
+function seasonalHarmonyView(harmony) {
+  const svg = buildHarmonyWallpaper(harmony)
+  const imageUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
+  const candidates = harmony.candidates.map(item => {
+    const location = item.visible ? '원국 천간에 드러남' : item.hidden ? '지장간에 있음' : '원국에서 확인되지 않음'
+    return `<li><b class="element-${item.element}">${item.order}순위 · ${item.stem} ${item.elementKo}(${item.elementHanja})</b><span>${location}</span></li>`
+  }).join('')
+  return `<section class="seasonal-harmony" data-testid="seasonal-harmony" aria-labelledby="seasonal-harmony-title">
+    <div class="harmony-copy">
+      <p>일간 × 월령의 계절 균형</p>
+      <h2 id="seasonal-harmony-title">한난조습과 보완 기운</h2>
+      <p class="harmony-summary"><b>${harmony.dayStem} 일간 · ${harmony.monthBranch}월</b>의 선용·후용·보좌 순서를 바탕으로 살펴본 참고 결과입니다.</p>
+      <p class="harmony-climate">월령 환경: ${harmony.climate}</p>
+      <ol>${candidates}</ol>
+      <p class="harmony-source">판정 근거: ${harmony.source} · ${harmony.evidenceId}</p>
+      <p class="harmony-caveat">이는 계절 균형을 위한 후보이며 조후용신이나 최종 용신의 확정이 아닙니다. 격국·강약·투간·합충과 실제 생활 맥락을 함께 살펴야 합니다.</p>
+      <p class="harmony-caveat">이미지는 전통적 상징과 생활 의도를 떠올리는 배경화면입니다. 저장만으로 운의 변화나 특정 결과를 보장하지 않습니다.</p>
+    </div>
+    <figure class="wallpaper-preview">
+      <img src="${imageUrl}" alt="계절 균형 이미지 — ${harmony.candidates.map(item => `${item.elementKo} 기운`).join('과 ')}을 상징하는 휴대폰 배경" />
+      <figcaption>
+        <span>1080 × 1920 · 기기 안에서 생성</span>
+        <button type="button" data-download-wallpaper>무료 이미지 저장</button>
+      </figcaption>
+    </figure>
+  </section>`
+}
+
+function downloadWallpaper(svg, harmony) {
+  return new Promise((resolve, reject) => {
+    const sourceUrl = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }))
+    const image = new Image()
+    image.onload = () => {
+      const canvas = document.createElement('canvas')
+      canvas.width = 1080
+      canvas.height = 1920
+      const context = canvas.getContext('2d')
+      context.drawImage(image, 0, 0, canvas.width, canvas.height)
+      URL.revokeObjectURL(sourceUrl)
+      canvas.toBlob(blob => {
+        if (!blob) {
+          reject(new Error('PNG 이미지를 만들지 못했습니다.'))
+          return
+        }
+        const targetUrl = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = targetUrl
+        link.download = `sai-seasonal-balance-${harmony.dayStem}-${harmony.monthBranch}.png`
+        link.click()
+        window.setTimeout(() => URL.revokeObjectURL(targetUrl), 1000)
+        resolve()
+      }, 'image/png')
+    }
+    image.onerror = () => {
+      URL.revokeObjectURL(sourceUrl)
+      reject(new Error('배경 이미지를 불러오지 못했습니다.'))
+    }
+    image.src = sourceUrl
+  })
+}
+
+function setupWallpaper(data) {
+  const button = result.querySelector('[data-download-wallpaper]')
+  const svg = buildHarmonyWallpaper(data.seasonalHarmony)
+  button.addEventListener('click', async () => {
+    button.disabled = true
+    button.textContent = '이미지 만드는 중…'
+    try {
+      await downloadWallpaper(svg, data.seasonalHarmony)
+      button.textContent = '저장 완료'
+    } catch (error) {
+      button.textContent = error.message
+    } finally {
+      window.setTimeout(() => {
+        button.disabled = false
+        button.textContent = '무료 이미지 저장'
+      }, 1500)
+    }
+  })
+}
+
 function renderResult(data, timeUnknown) {
   const pillars = Object.entries(data.pillars).map(([key, value]) => pillarCard(value, key)).join('')
   const balance = Object.entries(data.balance).map(([key, count]) => `<div class="balance-item"><div class="balance-label"><span>${elementLabel(key)}</span><b>${count}</b></div><div class="bar"><i class="element-bg-${key}" style="width:${count * 12.5}%"></i></div></div>`).join('')
@@ -180,6 +261,7 @@ function renderResult(data, timeUnknown) {
     </div>
     <div class="pillars" data-testid="pillars">${pillars}</div>
     ${natalEvidence(data.evidence)}
+    ${seasonalHarmonyView(data.seasonalHarmony)}
     <section class="interpretation" data-testid="interpretation" aria-labelledby="interpretation-title">
       <header class="interpretation-head">
         <p>명식을 삶의 언어로 풀어보기</p>
@@ -225,6 +307,7 @@ function renderResult(data, timeUnknown) {
     </div>`
   result.hidden = false
   setupLuckExplorer(data)
+  setupWallpaper(data)
   result.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' })
 }
 

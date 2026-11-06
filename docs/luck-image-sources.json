@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "sources": [
+    {
+      "id": 1,
+      "url": "https://koreascience.kr/article/JAKO202523450404274.pdf",
+      "title": "『난강망』의 새로운 해석, 조화용신론의 이론적 고찰",
+      "accessed": "2026-11-06"
+    },
+    {
+      "id": 2,
+      "url": "https://ai.google.dev/gemini-api/docs/pricing",
+      "title": "Gemini Developer API pricing",
+      "accessed": "2026-11-06"
+    },
+    {
+      "id": 3,
+      "url": "https://docs.tosspayments.com/guides/v2/billing/integration",
+      "title": "토스페이먼츠 자동결제 연동 가이드",
+      "accessed": "2026-11-06"
+    }
+  ]
+}
