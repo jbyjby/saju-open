@@ -84,11 +84,10 @@ function natalEvidence(evidence) {
   const items = relations.length
     ? relations.map(item => `<li><b>${item.type}</b><span>${item.members.join('·')} · ${item.labels.join(' ↔ ')}${item.result ? ` · ${item.result} 기운 가능성` : ''}</span></li>`).join('')
     : '<li><b>직접 관계</b><span>원국 네 기둥 사이에 판정된 합·충·형·해·파가 없습니다.</span></li>'
-  return `<section class="fortune-evidence natal-evidence" data-testid="natal-evidence">
-    <div><p>네 기둥 대조</p><h5>원국 관계 근거</h5></div>
-    <ul>${items}</ul>
-    <p class="evidence-note">여러 관계가 함께 성립할 수 있으며, 합은 합화 확정으로 보지 않습니다. 위치와 계절, 세력 조건을 함께 살펴야 합니다.</p>
-  </section>`
+  return `<details class="natal-evidence" data-testid="natal-evidence">
+    <summary><span>원국 관계 근거</span><small>합·충·형·해·파 판정 보기</small></summary>
+    <div class="natal-evidence-body"><ul>${items}</ul><p>여러 관계가 함께 성립할 수 있으며, 합은 합화 확정으로 보지 않습니다. 위치와 계절, 세력 조건을 함께 살펴야 합니다.</p></div>
+  </details>`
 }
 
 function renderAnnualDetail(explorer, annual) {
@@ -226,9 +225,10 @@ function renderResult(data, timeUnknown) {
     children: ['자녀와 후배', '子女'], study: ['학업과 자격', '學業'],
     relationship: ['관계와 소통', '關係'], wellbeing: ['생활 리듬', '健康'],
   }
-  const deepReadings = Object.entries(data.interpretation.readings).map(([key, reading], index) => `
-    <article class="deep-reading ${key === 'overall' ? 'featured' : ''}">
-      <div class="deep-reading-label"><span>${String(index + 1).padStart(2, '0')}</span><p>${readingLabels[key][0]}<small>${readingLabels[key][1]}</small></p></div>
+  const overall = data.interpretation.readings.overall
+  const deepReadings = Object.entries(data.interpretation.readings).filter(([key]) => key !== 'overall').map(([key, reading], index) => `
+    <article class="deep-reading">
+      <div class="deep-reading-label"><span>${String(index + 2).padStart(2, '0')}</span><p>${readingLabels[key][0]}<small>${readingLabels[key][1]}</small></p></div>
       <div class="deep-reading-copy"><h3>${reading.title}</h3><p>${reading.body}</p><ul>${reading.points.map(point => `<li>${point}</li>`).join('')}</ul></div>
     </article>`).join('')
   const corrected = data.corrected
@@ -241,12 +241,18 @@ function renderResult(data, timeUnknown) {
       ${timeUnknown ? '<p class="time-warning">태어난 시간을 몰라 낮 12시로 임시 계산했습니다. 시주와 대운 시작 시점은 달라질 수 있습니다.</p>' : ''}
     </div>
     <div class="pillars" data-testid="pillars">${pillars}</div>
-    ${natalEvidence(data.evidence)}
+    <section class="overall-reading" data-testid="overall-reading" aria-labelledby="overall-title">
+      <header><p>먼저 읽는 총운</p><span>01 · 總運</span></header>
+      <div class="overall-layout">
+        <div class="overall-copy"><h2 id="overall-title">${overall.title}</h2><p>${overall.body}</p></div>
+        <aside><p>이 사주에서 먼저 기억할 점</p><ul>${overall.points.map(point => `<li>${point}</li>`).join('')}</ul></aside>
+      </div>
+    </section>
     ${seasonalHarmonyView(data.seasonalHarmony)}
     <section class="interpretation" data-testid="interpretation" aria-labelledby="interpretation-title">
       <header class="interpretation-head">
-        <p>어려운 명리 용어를 쉬운 말로 풀었습니다</p>
-        <h2 id="interpretation-title">사주 해석</h2>
+        <p>총운 다음에 분야별로 살펴봅니다</p>
+        <h2 id="interpretation-title">삶의 여러 장면</h2>
         <p>${data.interpretation.note}</p>
       </header>
       <div class="deep-readings">${deepReadings}</div>
@@ -270,6 +276,7 @@ function renderResult(data, timeUnknown) {
         <p>${data.interpretation.dominant.caution}</p>
       </article>
     </div>
+    ${natalEvidence(data.evidence)}
     <p class="interpretation-note">${data.interpretation.note}</p>
     <section class="luck-explorer" data-luck-explorer data-testid="luck-explorer" aria-labelledby="luck-title">
       <header class="luck-explorer-head"><p>10년과 1년의 흐름</p><h2 id="luck-title">대운·세운 상세 풀이</h2><span>대운을 고른 뒤 세운을 누르면 해당 연도의 직업·재물·배우자·관계·생활 흐름을 볼 수 있습니다.</span></header>
