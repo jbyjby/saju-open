@@ -150,33 +150,73 @@ function setupLuckExplorer(data) {
   renderCycleDetail(explorer, data, initialCycle)
 }
 
-function seasonalHarmonyView(harmony) {
-  const guidance = getLuckImageGuidance(harmony)
+function strategyItem(item, role, description) {
+  if (!item) return ''
+  return `<article class="strategy-item strategy-${role}">
+    <span>${description}</span>
+    <h3 class="element-${item.element}">${item.label}</h3>
+    <p>${item.reason}</p>
+  </article>`
+}
+
+function luckHeroView(data, overall) {
+  const strategy = data.balanceStrategy
+  const guidance = getLuckImageGuidance(data.seasonalHarmony, strategy)
   const imageUrl = `${import.meta.env.BASE_URL}luck-images/${guidance.neededElement}.jpg`
-  const roleLabels = { 선용: '먼저 살필 기운', 후용: '함께 살필 기운', 보좌: '보조로 살필 기운' }
-  const candidates = harmony.candidates.map(item => {
-    const location = item.visible ? '원국 천간에 드러남' : item.hidden ? '지장간에 있음' : '원국에서 확인되지 않음'
-    return `<li><b class="element-${item.element}">${roleLabels[item.role]} · ${item.stem} ${item.elementKo}(${item.elementHanja})</b><span>${location}</span></li>`
+  return `<section class="luck-hero" data-testid="luck-hero" aria-labelledby="luck-hero-title">
+    <figure class="luck-visual">
+      <img src="${imageUrl}" alt="계절 균형 이미지 — ${strategy.priority.label}을 중심으로 ${strategy.support.label}을 함께 담은 휴대폰 배경" />
+      <div class="image-badge"><span>무료 개운 이미지</span><b>${strategy.priority.label} × ${strategy.support.label}</b></div>
+    </figure>
+    <div class="luck-hero-copy" data-testid="overall-reading">
+      <p class="product-kicker">총운에서 고른 개운 이미지</p>
+      <h2 id="luck-hero-title">${overall.title}</h2>
+      <p class="hero-overall is-collapsed"><b>먼저 읽는 총운</b><span>${overall.body}</span></p>
+      <button class="overall-toggle" type="button" aria-expanded="false">총운 전체 읽기</button>
+      <div class="strategy-chips" aria-label="보완 전략">
+        <span><small>우선 보완</small>${strategy.priority.label}</span>
+        <span><small>함께 보완</small>${strategy.support.label}</span>
+      </div>
+      <div class="hero-reason"><h3>왜 이 장면인가요?</h3><p>${guidance.whyNeeded}</p></div>
+      <button class="save-wallpaper" type="button" data-download-wallpaper><span>휴대폰에 이미지 저장</span><b aria-hidden="true">↓</b></button>
+      <p class="image-disclaimer">이미지는 필요한 태도를 떠올리는 배경화면입니다. 저장만으로 운의 변화나 특정 결과를 보장하지 않습니다.</p>
+    </div>
+  </section>`
+}
+
+function seasonalHarmonyView(harmony, strategy) {
+  const guidance = getLuckImageGuidance(harmony, strategy)
+  const conditional = strategy.conditional.map(item => `<li><b class="element-${item.element}">${item.label}</b><span>${item.reason}</span></li>`).join('')
+  const caution = strategy.caution.map(item => `<li><b class="element-${item.element}">${item.label}</b><span>${item.reason}</span></li>`).join('')
+  const tableCandidates = harmony.candidates.map(item => {
+    const location = item.visible ? '천간에 드러남' : item.hidden ? '지장간에 있음' : '원국에서 뚜렷하지 않음'
+    return `<li><b>${item.stem} ${item.elementKo}(${item.elementHanja})</b><span>${location}</span></li>`
   }).join('')
   return `<section class="seasonal-harmony" data-testid="seasonal-harmony" aria-labelledby="seasonal-harmony-title">
-    <div class="harmony-copy">
-      <p>한난조습으로 보는 일간 × 월령의 계절 균형</p>
+    <header class="strategy-head">
+      <p>월령표를 명식 전체로 다시 검토했습니다</p>
       <h2 id="seasonal-harmony-title">이 사주에 이 이미지가 필요한 이유</h2>
-      <p class="harmony-summary"><b>${harmony.dayStem} 일간은 ${guidance.strength}</b> ${guidance.blindSpot}</p>
-      <p class="harmony-climate">${harmony.monthBranch}월은 ${harmony.climate}가 두드러지는 때입니다. 이 계절에는 <b>${guidance.neededLabel}</b>을 먼저 보완 기운으로 살핍니다.</p>
-      <p class="harmony-why">${guidance.whyNeeded}</p>
-      <ol>${candidates}</ol>
-      <div class="luck-definition"><h3>개운은 이렇게 쓰는 겁니다</h3><p>${guidance.definition}</p><ul>${guidance.practice.map(item => `<li>${item}</li>`).join('')}</ul><p>${guidance.saveReason}</p></div>
-      <details class="harmony-evidence"><summary>판정 기준과 한계 보기</summary><p>${harmony.source} · ${harmony.evidenceId}</p><p>이 결과는 계절 균형을 살피는 보완 후보입니다. 조후용신이나 최종 용신을 확정한 결과는 아닙니다. 격국·강약·투간·합충과 실제 생활 조건을 함께 살펴야 합니다.</p><p>이미지 저장만으로 운의 변화나 특정 결과를 보장하지 않습니다.</p></details>
+      <span>${strategy.summary}</span>
+    </header>
+    <div class="strategy-grid">
+      ${strategyItem(strategy.priority, 'priority', '우선 보완')}
+      ${strategyItem(strategy.support, 'support', '함께 보완')}
     </div>
-    <figure class="wallpaper-preview">
-      <img src="${imageUrl}" alt="계절 균형 이미지 — ${harmony.candidates.map(item => `${item.elementKo} 기운`).join('과 ')}을 상징하는 휴대폰 배경" />
-      <figcaption>
-        <span>2K 세로 · Gemini로 제작한 무료 기본형</span>
-        <small>생년월일을 이미지 API로 보내지 않습니다.</small>
-        <button type="button" data-download-wallpaper>이 개운 이미지 저장하기</button>
-      </figcaption>
-    </figure>
+    <div class="strategy-secondary">
+      <section><p>조건부 활용</p><ul>${conditional || '<li><span>별도로 앞세울 조건부 기운이 없습니다.</span></li>'}</ul></section>
+      <section><p>과용 주의</p><ul>${caution || '<li><span>현재 규칙에서 특별히 과용을 경계할 기운이 없습니다.</span></li>'}</ul></section>
+    </div>
+    <div class="practice-panel">
+      <div><p>이미지를 생활에서 쓰는 법</p><h3>화면을 볼 때마다 이 세 가지를 떠올리세요</h3><span>${guidance.definition}</span></div>
+      <div><ol>${guidance.practice.map((item, index) => `<li><span>0${index + 1}</span>${item}</li>`).join('')}</ol><p class="save-reason">${guidance.saveReason}</p></div>
+    </div>
+    <details class="harmony-evidence">
+      <summary>판정 근거와 한계</summary>
+      <div class="evidence-columns">
+        <div><h4>계절 후보</h4><ul>${tableCandidates}</ul></div>
+        <div><h4>종합 재검토</h4><p>${strategy.note}</p><p>${harmony.source}</p><p>${strategy.evidenceId} · ${harmony.evidenceId}</p></div>
+      </div>
+    </details>
   </section>`
 }
 
@@ -193,7 +233,7 @@ async function downloadWallpaper(imageUrl, harmony) {
 
 function setupWallpaper(data) {
   const button = result.querySelector('[data-download-wallpaper]')
-  const guidance = getLuckImageGuidance(data.seasonalHarmony)
+  const guidance = getLuckImageGuidance(data.seasonalHarmony, data.balanceStrategy)
   const imageUrl = `${import.meta.env.BASE_URL}luck-images/${guidance.neededElement}.jpg`
   button.addEventListener('click', async () => {
     button.disabled = true
@@ -206,9 +246,21 @@ function setupWallpaper(data) {
     } finally {
       window.setTimeout(() => {
         button.disabled = false
-        button.textContent = '이 개운 이미지 저장하기'
+        button.innerHTML = '<span>휴대폰에 이미지 저장</span><b aria-hidden="true">↓</b>'
       }, 1500)
     }
+  })
+}
+
+function setupOverallToggle() {
+  const button = result.querySelector('.overall-toggle')
+  const copy = result.querySelector('.hero-overall')
+  if (!button || !copy) return
+  button.addEventListener('click', () => {
+    const expanded = button.getAttribute('aria-expanded') === 'true'
+    button.setAttribute('aria-expanded', String(!expanded))
+    button.textContent = expanded ? '총운 전체 읽기' : '총운 접기'
+    copy.classList.toggle('is-collapsed', expanded)
   })
 }
 
@@ -240,15 +292,10 @@ function renderResult(data, timeUnknown) {
       <div class="result-meta"><span>양력 ${solar.year}.${solar.month}.${solar.day}</span><span>평균태양시 ${String(corrected.hour).padStart(2, '0')}:${String(corrected.minute).padStart(2, '0')}</span><span>${data.timeZone.zone}</span></div>
       ${timeUnknown ? '<p class="time-warning">태어난 시간을 몰라 낮 12시로 임시 계산했습니다. 시주와 대운 시작 시점은 달라질 수 있습니다.</p>' : ''}
     </div>
+    ${luckHeroView(data, overall)}
+    <div class="compact-section-head"><p>이미지를 고른 명식</p><h2>네 기둥 한눈에 보기</h2></div>
     <div class="pillars" data-testid="pillars">${pillars}</div>
-    <section class="overall-reading" data-testid="overall-reading" aria-labelledby="overall-title">
-      <header><p>먼저 읽는 총운</p><span>01 · 總運</span></header>
-      <div class="overall-layout">
-        <div class="overall-copy"><h2 id="overall-title">${overall.title}</h2><p>${overall.body}</p></div>
-        <aside><p>이 사주에서 먼저 기억할 점</p><ul>${overall.points.map(point => `<li>${point}</li>`).join('')}</ul></aside>
-      </div>
-    </section>
-    ${seasonalHarmonyView(data.seasonalHarmony)}
+    ${seasonalHarmonyView(data.seasonalHarmony, data.balanceStrategy)}
     <section class="interpretation" data-testid="interpretation" aria-labelledby="interpretation-title">
       <header class="interpretation-head">
         <p>총운 다음에 분야별로 살펴봅니다</p>
@@ -296,6 +343,7 @@ function renderResult(data, timeUnknown) {
   result.hidden = false
   setupLuckExplorer(data)
   setupWallpaper(data)
+  setupOverallToggle()
   result.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' })
 }
 

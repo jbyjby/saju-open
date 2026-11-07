@@ -109,22 +109,154 @@ const ELEMENT_LUCK_GUIDANCE = {
   water: { meaning: '속도를 낮추고 흐름을 살피는 힘', why: '서두르기 전에 마음과 상황을 충분히 읽도록 돕는 기운', practice: ['답을 정하기 전에 잠깐 멈추기', '잠들기 전 머릿속 생각을 적기', '일정 사이에 아무것도 하지 않는 시간을 두기'] },
 }
 
-export function getLuckImageGuidance(harmony) {
+const ELEMENT_KEYS = ['wood', 'fire', 'earth', 'metal', 'water']
+const BRANCH_WEIGHTS = { year: 1.2, month: 2.4, day: 1.5, time: 1.2 }
+const HIDDEN_WEIGHTS = [0.45, 0.2, 0.1]
+
+function generatedBy(element) {
+  return ELEMENT_KEYS.find(key => GENERATES[key] === element)
+}
+
+function controlledBy(element) {
+  return ELEMENT_KEYS.find(key => CONTROLS[key] === element)
+}
+
+function weightedElementForces(pillars) {
+  const forces = Object.fromEntries(ELEMENT_KEYS.map(key => [key, 0]))
+  for (const [position, pillar] of Object.entries(pillars)) {
+    forces[STEM_ELEMENT[pillar.stem]] += position === 'day' ? 1.3 : 1
+    forces[BRANCH_ELEMENT[pillar.branch]] += BRANCH_WEIGHTS[position]
+    const hiddenFactor = position === 'month' ? 1.4 : 1
+    for (const [index, stem] of (HIDDEN_STEMS[pillar.branch] || []).entries()) {
+      forces[STEM_ELEMENT[stem]] += (HIDDEN_WEIGHTS[index] || 0.05) * hiddenFactor
+    }
+  }
+  return forces
+}
+
+function strategyReason(element, context) {
+  const { dayElement, resourceElement, outputElement, wealthElement, authorityElement, weak, dominantElement } = context
+  if (weak && element === resourceElement) return `${ELEMENTS[element].ko}은 강한 기운을 받아 ${ELEMENTS[dayElement].ko} 일간으로 이어 주는 생조 통로가 됩니다.`
+  if (weak && element === dayElement) return `${ELEMENTS[element].ko}은 뿌리가 약한 일간의 힘을 직접 보태고 계절의 치우침을 완화합니다.`
+  if (weak && element === outputElement) return `${ELEMENTS[element].ko}은 ${ELEMENTS[authorityElement].ko}의 압박을 조절할 수 있지만, 약한 일간의 힘을 먼저 소모하므로 선행 보완이 필요합니다.`
+  if (element === dominantElement) return `${ELEMENTS[element].ko}은 원국에서 이미 두드러져 더 보태기보다 쓰는 방식과 강도를 조절해야 합니다.`
+  if (element === wealthElement) return `${ELEMENTS[element].ko}은 현실의 성과로 연결하지만 일간의 힘을 쓰게 하므로 양을 조절해야 합니다.`
+  if (element === authorityElement) return `${ELEMENTS[element].ko}은 책임과 기준을 세우지만 지나치면 일간을 압박할 수 있습니다.`
+  return `${ELEMENTS[element].ko}은 계절 후보와 원국의 세력을 함께 볼 때 보조적으로 활용할 수 있습니다.`
+}
+
+export function getBalanceStrategy(pillars, harmony) {
+  const dayElement = STEM_ELEMENT[harmony.dayStem]
+  const resourceElement = generatedBy(dayElement)
+  const outputElement = GENERATES[dayElement]
+  const wealthElement = CONTROLS[dayElement]
+  const authorityElement = controlledBy(dayElement)
+  const rawForces = weightedElementForces(pillars)
+  const branchEntries = Object.entries(pillars).map(([position, pillar]) => ({ label: position, value: pillar.branch }))
+  const stemEntries = Object.entries(pillars).map(([position, pillar]) => ({ label: position, value: pillar.stem }))
+  const branchRelationships = analyzeBranchSet(branchEntries)
+  const stemRelationships = analyzeStemSet(stemEntries)
+  const relationPenalties = { 육충: 0.35, 형: 0.2, 삼형: 0.2, 자형: 0.2, 육해: 0.18, 육파: 0.15 }
+  const forceAdjustments = Object.fromEntries(ELEMENT_KEYS.map(key => [key, 0]))
+  for (const relation of branchRelationships) {
+    const penalty = relationPenalties[relation.type] || 0
+    for (const branch of relation.members) {
+      if (penalty && BRANCH_ELEMENT[branch]) forceAdjustments[BRANCH_ELEMENT[branch]] -= penalty
+    }
+  }
+  const forces = Object.fromEntries(ELEMENT_KEYS.map(key => [key, Math.max(0, rawForces[key] + forceAdjustments[key])]))
+  const total = Object.values(forces).reduce((sum, value) => sum + value, 0)
+  const supportShare = (forces[dayElement] + forces[resourceElement]) / total
+  const level = supportShare < 0.36 ? 'weak' : supportShare > 0.57 ? 'strong' : 'balanced'
+  const weak = level === 'weak'
+  const strong = level === 'strong'
+  const dominantElement = ELEMENT_KEYS.reduce((best, key) => forces[key] > forces[best] ? key : best, ELEMENT_KEYS[0])
+  const seasonalOrder = new Map(harmony.candidates.map((candidate, index) => [candidate.element, Math.max(1, 3 - index)]))
+  const drySeason = ['申', '酉', '戌'].includes(harmony.monthBranch)
+  const hotSeason = ['巳', '午', '未'].includes(harmony.monthBranch)
+  const coldSeason = ['亥', '子', '丑'].includes(harmony.monthBranch)
+
+  const scores = Object.fromEntries(ELEMENT_KEYS.map(element => {
+    let score = seasonalOrder.get(element) || 0
+    if (weak) {
+      if (element === resourceElement) score += 6
+      if (element === dayElement) score += 5
+      if (element === outputElement) score -= 2.5
+      if (element === wealthElement) score -= 4
+      if (element === authorityElement) score -= 4
+      if (dominantElement === authorityElement && element === resourceElement) score += 2
+      if (dominantElement === authorityElement && element === outputElement) score += 1
+    } else if (strong) {
+      if (element === outputElement) score += 5
+      if (element === wealthElement) score += 4
+      if (element === authorityElement) score += 4
+      if (element === dayElement || element === resourceElement) score -= 3
+    } else {
+      if (element === outputElement || element === resourceElement) score += 2
+      if (element === wealthElement || element === authorityElement) score += 1
+    }
+    if ((drySeason || hotSeason) && element === 'water') score += 2
+    if (coldSeason && element === 'fire') score += 2
+    if (forces[element] / total > 0.28) score -= 3
+    return [element, score]
+  }))
+
+  const context = { dayElement, resourceElement, outputElement, wealthElement, authorityElement, weak, dominantElement }
+  const ranked = ELEMENT_KEYS.map(element => ({
+    element,
+    label: `${ELEMENTS[element].ko}(${ELEMENTS[element].hanja})`,
+    score: Number(scores[element].toFixed(2)),
+    force: Number(forces[element].toFixed(2)),
+    reason: strategyReason(element, context),
+  })).sort((a, b) => b.score - a.score || a.element.localeCompare(b.element))
+  const priority = ranked[0]
+  const support = ranked[1]
+  const caution = ranked.filter(item => item.element !== priority.element && item.element !== support.element && (item.score < 0 || item.element === dominantElement))
+  const cautionSet = new Set(caution.map(item => item.element))
+  const conditional = ranked.filter(item => item.element !== priority.element && item.element !== support.element && !cautionSet.has(item.element))
+  const strengthText = weak
+    ? '일간을 돕는 기운보다 소모하거나 압박하는 기운이 더 크게 나타납니다.'
+    : strong
+      ? '일간을 돕는 기운이 충분해 바깥으로 쓰고 조절하는 방향을 함께 살핍니다.'
+      : '일간을 돕는 힘과 밖으로 쓰는 힘이 한쪽으로 크게 치우치지 않습니다.'
+  return {
+    rulesetVersion: 'balance-strategy-v1',
+    evidenceId: `balance-strategy:${harmony.dayStem}:${harmony.monthBranch}`,
+    isFinalYongShen: false,
+    strength: { level, supportShare: Number(supportShare.toFixed(3)), summary: strengthText },
+    rawForces: Object.fromEntries(ELEMENT_KEYS.map(key => [key, Number(rawForces[key].toFixed(2))])),
+    forces: Object.fromEntries(ELEMENT_KEYS.map(key => [key, Number(forces[key].toFixed(2))])),
+    forceAdjustments: Object.fromEntries(ELEMENT_KEYS.map(key => [key, Number(forceAdjustments[key].toFixed(2))])),
+    relationships: { stem: stemRelationships, branch: branchRelationships },
+    priority, support, conditional, caution,
+    summary: `${strengthText} 그래서 ${priority.label}을 먼저 살리고 ${support.label}을 함께 보완합니다.`,
+    note: '월령 후보, 표면 천간·지지, 지장간, 뿌리와 생극 흐름을 함께 비교한 설명용 휴리스틱입니다. 충·형·해·파는 뿌리의 안정성에만 소폭 반영하고, 합은 합화로 확정하지 않습니다. 격국까지 확정한 전통 명리의 최종 용신 판정은 아닙니다.',
+  }
+}
+
+export function getLuckImageGuidance(harmony, strategy = null) {
   const day = DAY_MASTER_GUIDANCE[harmony.dayStem]
-  const primary = harmony.candidates[0]
-  const element = ELEMENT_LUCK_GUIDANCE[primary.element]
-  if (!day || !primary || !element) throw new Error('개운 이미지 안내를 만들 판정 근거가 부족합니다.')
-  const location = primary.visible
-    ? '이 기운이 겉으로 드러나 있지만, 바쁠 때는 장점보다 날카로움이 먼저 나타날 수 있습니다.'
-    : primary.hidden
-      ? '이 기운이 사주 안에 숨어 있어도 저절로 충분히 쓰이는 것은 아닙니다. 필요할 때 의식해서 꺼내 쓰는 편이 좋습니다.'
-      : '이 기운이 원국에서 뚜렷하게 확인되지 않으므로 생활 속에서 의식적으로 보완해 볼 만합니다.'
+  const primaryCandidate = harmony.candidates[0]
+  const primaryElement = strategy?.priority.element || primaryCandidate.element
+  const supportElement = strategy?.support.element || null
+  const element = ELEMENT_LUCK_GUIDANCE[primaryElement]
+  if (!day || !primaryCandidate || !element) throw new Error('개운 이미지 안내를 만들 판정 근거가 부족합니다.')
+  const primaryInChart = harmony.candidates.find(candidate => candidate.element === primaryElement)
+  const location = primaryInChart?.visible
+    ? '이 기운은 원국에 드러나 있으므로 무작정 더하기보다 제 기능을 안정적으로 쓰는 것이 중요합니다.'
+    : primaryInChart?.hidden
+      ? '이 기운은 원국 안에 숨어 있으므로 필요할 때 의식적으로 꺼내 쓰는 편이 좋습니다.'
+      : '이 기운은 원국에서 뚜렷하지 않아 생활의 태도와 환경으로 보완해 볼 만합니다.'
+  const supportCopy = supportElement
+    ? ` ${ELEMENTS[supportElement].ko} 기운은 ${ELEMENT_LUCK_GUIDANCE[supportElement].meaning}으로 이 흐름을 함께 받칩니다.`
+    : ''
   return {
     strength: day.strength,
     blindSpot: day.blindSpot,
-    neededElement: primary.element,
-    neededLabel: `${primary.stem} ${primary.elementKo}(${primary.elementHanja})`,
-    whyNeeded: `${primary.elementKo} 기운이 상징하는 ${element.meaning}은 ${element.why}입니다. ${location}`,
+    neededElement: primaryElement,
+    supportElement,
+    neededLabel: strategy?.priority.label || `${primaryCandidate.stem} ${primaryCandidate.elementKo}(${primaryCandidate.elementHanja})`,
+    whyNeeded: `${ELEMENTS[primaryElement].ko} 기운이 상징하는 ${element.meaning}은 ${element.why}입니다.${supportCopy} ${location}`,
     practice: element.practice,
     definition: '여기서 개운은 운명을 바꾸는 주문이 아닙니다. 내 사주가 놓치기 쉬운 방향을 알아차리고, 선택과 습관을 조금씩 바꾸는 일입니다.',
     saveReason: '이 이미지를 휴대폰 배경화면에 두는 이유도 같습니다. 하루에 여러 번 화면을 볼 때마다 지금 필요한 태도를 짧게 떠올리는 표지로 쓰세요.',
@@ -589,6 +721,7 @@ export function calculateSaju(input) {
     branchRelations: analyzeBranchSet(Object.entries(pillars).map(([key, pillar]) => ({ label: `${pillarLabels[key]} 지지`, value: pillar.branch }))),
   }
   const balance = getElementBalance(Object.values(pillars).map(p => p.ganZhi))
+  const balanceStrategy = getBalanceStrategy(pillars, seasonalHarmony)
   const yun = eightChar.getYun(gender === 'male' ? 1 : 0)
   const luckCycles = yun.getDaYun(9).slice(1).map(item => {
     const ganZhi = item.getGanZhi()
@@ -610,7 +743,7 @@ export function calculateSaju(input) {
   })
   return {
     entered, solarDate, corrected, timeZone: getKoreanOffsetLabel(year, month, day, hour, minute),
-    lunarText: lunar.toString(), pillars, evidence, balance, seasonalHarmony, luckCycles,
+    lunarText: lunar.toString(), pillars, evidence, balance, seasonalHarmony, balanceStrategy, luckCycles,
     interpretation: buildInterpretation(pillars, balance, gender),
   }
 }

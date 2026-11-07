@@ -10,6 +10,7 @@ import {
   analyzeBranchSet,
   analyzeStemSet,
   getSeasonalHarmony,
+  getBalanceStrategy,
   getLuckImageGuidance,
   trueSolarTime,
 } from '../src/saju.js'
@@ -142,6 +143,36 @@ describe('해석 규칙', () => {
     expect(harmony.evidenceId).toBe('seasonal-harmony:甲:寅')
     expect(harmony.candidates[0].evidenceId).toBe('seasonal-harmony:甲:寅:1:丙')
     expect(harmony.rulesetVersion).toBe('seasonal-harmony-2025-table1-v1')
+  })
+
+  it('약한 계수가 강한 화토에 눌릴 때 금 우선·수 보조·목 조건부로 재검증한다', () => {
+    const result = calculateSaju({
+      calendar: 'solar', year: 2026, month: 11, day: 5,
+      hour: 18, minute: 55, gender: 'female',
+    })
+    expect(Object.values(result.pillars).map(pillar => pillar.ganZhi)).toEqual(['丙午', '戊戌', '癸未', '辛酉'])
+    expect(result.balanceStrategy.strength.level).toBe('weak')
+    expect(result.balanceStrategy.relationships.branch.map(item => item.type)).toEqual(expect.arrayContaining(['육합', '육해']))
+    expect(result.balanceStrategy.rawForces.earth).toBeGreaterThan(result.balanceStrategy.forces.earth)
+    expect(result.balanceStrategy.priority.element).toBe('metal')
+    expect(result.balanceStrategy.support.element).toBe('water')
+    expect(result.balanceStrategy.conditional.map(item => item.element)).toContain('wood')
+    expect(result.balanceStrategy.caution.map(item => item.element)).toEqual(expect.arrayContaining(['fire', 'earth']))
+    expect(result.balanceStrategy.isFinalYongShen).toBe(false)
+  })
+
+  it('개운 이미지는 월령표 첫 줄이 아니라 종합 보완 전략의 우선 기운을 따른다', () => {
+    const pillars = {
+      year: { stem: '丙', branch: '午' }, month: { stem: '戊', branch: '戌' },
+      day: { stem: '癸', branch: '未' }, time: { stem: '辛', branch: '酉' },
+    }
+    const harmony = getSeasonalHarmony('癸', '戌', pillars)
+    const strategy = getBalanceStrategy(pillars, harmony)
+    const guidance = getLuckImageGuidance(harmony, strategy)
+    expect(guidance.neededElement).toBe('metal')
+    expect(guidance.supportElement).toBe('water')
+    expect(guidance.whyNeeded).toContain('금')
+    expect(guidance.whyNeeded).toContain('수')
   })
 
   it('개운 이미지가 필요한 이유를 강점과 보완 행동으로 설명한다', () => {

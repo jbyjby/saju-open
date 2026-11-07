@@ -1,0 +1,19 @@
+{
+  "name": "사이 — 나에게 필요한 개운 이미지",
+  "short_name": "사이",
+  "description": "사주 흐름을 읽고 나에게 필요한 개운 이미지를 저장하는 웹앱",
+  "lang": "ko",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7f6f2",
+  "theme_color": "#f7f6f2",
+  "icons": [
+    {
+      "src": "./app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
