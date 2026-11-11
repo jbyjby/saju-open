@@ -76,6 +76,33 @@ test('생년월일을 입력하면 사주와 근거가 표시된다', async ({ p
   expect(overflow).toBe(true)
 })
 
+test('예시 명식은 개인 물상 이미지와 쉬운 명리 설명을 보여 준다', async ({ page }) => {
+  await page.goto('/')
+  await page.getByLabel('태어난 해').fill('1987')
+  await page.getByLabel('태어난 달').selectOption('1')
+  await page.getByLabel('태어난 날').selectOption('25')
+  await page.getByLabel('태어난 시', { exact: true }).selectOption('18')
+  await page.getByLabel('태어난 분').selectOption('30')
+  await page.getByRole('radio', { name: '남성' }).check()
+  await page.getByRole('button', { name: '내 대박 배경화면 받기' }).click()
+
+  await expect(page.getByTestId('pillars')).toContainText('丙寅')
+  await expect(page.getByTestId('pillars')).toContainText('辛丑')
+  await expect(page.getByTestId('pillars')).toContainText('甲戌')
+  await expect(page.getByTestId('pillars')).toContainText('癸酉')
+  await expect(page.getByTestId('luck-hero').getByRole('img')).toHaveAttribute('src', /personalized\/1987-01-25-1830\.jpg$/)
+
+  const story = page.getByTestId('visual-story')
+  await expect(story).toContainText('그림으로 읽는 내 사주')
+  await expect(story).toContainText('갑목(곧게 자라는 큰 나무)')
+  await expect(story).toContainText('병화(태양)')
+  await expect(story).toContainText('정화(가까이 머무는 온기)')
+  await expect(story).toContainText('계수(이슬과 맑은 물)')
+  await expect(story).toContainText('이미 가진 힘')
+  await expect(story).toContainText('더 필요한 작용')
+  await expect(story).toContainText('유금 → 계수 → 갑목')
+})
+
 test('2026년 계미일 명식은 금 우선·수 보조 이미지를 보여 준다', async ({ page }) => {
   await page.goto('/')
   await page.getByLabel('태어난 해').fill('2026')

@@ -12,6 +12,7 @@ import {
   getSeasonalHarmony,
   getBalanceStrategy,
   getLuckImageGuidance,
+  getSajuVisualProfile,
   trueSolarTime,
 } from '../src/saju.js'
 
@@ -173,6 +174,22 @@ describe('해석 규칙', () => {
     expect(guidance.supportElement).toBe('water')
     expect(guidance.whyNeeded).toContain('금')
     expect(guidance.whyNeeded).toContain('수')
+  })
+
+  it('예시 명식을 원국 물상과 필요한 작용으로 분리한다', () => {
+    const result = calculateSaju({
+      calendar: 'solar', year: 1987, month: 1, day: 25,
+      hour: 18, minute: 30, gender: 'male',
+    })
+    const profile = getSajuVisualProfile(result)
+
+    expect(Object.values(result.pillars).map(pillar => pillar.ganZhi)).toEqual(['丙寅', '辛丑', '甲戌', '癸酉'])
+    expect(profile.asset).toBe('personalized/1987-01-25-1830.jpg')
+    expect(profile.protagonist.term).toBe('갑목(곧게 자라는 큰 나무)')
+    expect(profile.existingStrength.term).toBe('병화(태양)')
+    expect(profile.neededFunction.term).toBe('정화(가까이 머무는 온기)')
+    expect(profile.support.term).toBe('계수(이슬과 맑은 물)')
+    expect(profile.flow).toContain('유금 → 계수 → 갑목')
   })
 
   it('개운 이미지가 필요한 이유를 강점과 보완 행동으로 설명한다', () => {

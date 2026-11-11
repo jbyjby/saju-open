@@ -1,4 +1,4 @@
-import { calculateSaju, ELEMENTS, getLuckImageGuidance } from './saju.js'
+import { calculateSaju, ELEMENTS, getLuckImageGuidance, getSajuVisualProfile } from './saju.js'
 
 const form = document.querySelector('#birth-form')
 const result = document.querySelector('#result')
@@ -159,28 +159,59 @@ function strategyItem(item, role, description) {
   </article>`
 }
 
+function imagePresentation(data) {
+  const profile = getSajuVisualProfile(data)
+  const guidance = getLuckImageGuidance(data.seasonalHarmony, data.balanceStrategy)
+  return {
+    profile,
+    guidance,
+    imageUrl: profile
+      ? `${import.meta.env.BASE_URL}luck-images/${profile.asset}`
+      : `${import.meta.env.BASE_URL}luck-images/${guidance.neededElement}.jpg`,
+  }
+}
+
 function luckHeroView(data, overall) {
   const strategy = data.balanceStrategy
-  const guidance = getLuckImageGuidance(data.seasonalHarmony, strategy)
-  const imageUrl = `${import.meta.env.BASE_URL}luck-images/${guidance.neededElement}.jpg`
+  const { profile, guidance, imageUrl } = imagePresentation(data)
+  const imageAlt = profile
+    ? `개인 물상 이미지 — ${profile.title}`
+    : `계절 균형 이미지 — ${strategy.priority.label}을 중심으로 ${strategy.support.label}을 함께 담은 휴대폰 배경`
   return `<section class="luck-hero" data-testid="luck-hero" aria-labelledby="luck-hero-title">
     <figure class="luck-visual">
-      <img src="${imageUrl}" alt="계절 균형 이미지 — ${strategy.priority.label}을 중심으로 ${strategy.support.label}을 함께 담은 휴대폰 배경" />
-      <div class="image-badge"><span>무료 개운 이미지</span><b>${strategy.priority.label} × ${strategy.support.label}</b></div>
+      <img src="${imageUrl}" alt="${imageAlt}" />
+      <div class="image-badge"><span>${profile ? '검수된 개인 물상 시안' : '검수된 기본형 배경화면'}</span><b>${profile ? '원국 × 필요한 작용' : `${strategy.priority.label} × ${strategy.support.label}`}</b></div>
     </figure>
     <div class="luck-hero-copy" data-testid="overall-reading">
-      <p class="product-kicker">총운에서 고른 개운 이미지</p>
-      <h2 id="luck-hero-title">${overall.title}</h2>
+      <p class="product-kicker">${profile ? '내 사주를 한 장의 물상으로' : '총운에서 고른 개운 이미지'}</p>
+      <h2 id="luck-hero-title">${profile?.title || overall.title}</h2>
       <p class="hero-overall is-collapsed"><b>먼저 읽는 총운</b><span>${overall.body}</span></p>
       <button class="overall-toggle" type="button" aria-expanded="false">총운 전체 읽기</button>
       <div class="strategy-chips" aria-label="보완 전략">
         <span><small>우선 보완</small>${strategy.priority.label}</span>
         <span><small>함께 보완</small>${strategy.support.label}</span>
       </div>
-      <div class="hero-reason"><h3>왜 이 장면인가요?</h3><p>${guidance.whyNeeded}</p></div>
+      <div class="hero-reason"><h3>왜 이 장면인가요?</h3><p>${profile?.scene || guidance.whyNeeded}</p></div>
       <button class="save-wallpaper" type="button" data-download-wallpaper><span>휴대폰에 이미지 저장</span><b aria-hidden="true">↓</b></button>
       <p class="image-disclaimer">이미지는 필요한 태도를 떠올리는 배경화면입니다. 저장만으로 운의 변화나 특정 결과를 보장하지 않습니다.</p>
     </div>
+  </section>`
+}
+
+function visualStoryView(data) {
+  const profile = getSajuVisualProfile(data)
+  if (!profile) return ''
+  const symbols = [profile.protagonist, profile.environment, profile.existingStrength, profile.neededFunction, profile.support]
+  return `<section class="visual-story" data-testid="visual-story" aria-labelledby="visual-story-title">
+    <header>
+      <p>이미지 속 물상을 하나씩 풀어봅니다</p>
+      <h2 id="visual-story-title">그림으로 읽는 내 사주</h2>
+      <span>전문 용어는 처음 나올 때 쉬운 물상을 괄호 안에 함께 적었습니다.</span>
+    </header>
+    <div class="visual-story-grid">
+      ${symbols.map((symbol, index) => `<article><span>0${index + 1} · ${symbol.label}</span><h3>${symbol.term}</h3><p>${symbol.visual}</p></article>`).join('')}
+    </div>
+    <div class="visual-flow"><span>그림 속 생조 흐름</span><b>${profile.flow}</b><p>${profile.disclaimer}</p></div>
   </section>`
 }
 
@@ -233,8 +264,7 @@ async function downloadWallpaper(imageUrl, harmony) {
 
 function setupWallpaper(data) {
   const button = result.querySelector('[data-download-wallpaper]')
-  const guidance = getLuckImageGuidance(data.seasonalHarmony, data.balanceStrategy)
-  const imageUrl = `${import.meta.env.BASE_URL}luck-images/${guidance.neededElement}.jpg`
+  const { imageUrl } = imagePresentation(data)
   button.addEventListener('click', async () => {
     button.disabled = true
     button.textContent = '저장하는 중…'
@@ -293,6 +323,7 @@ function renderResult(data, timeUnknown) {
       ${timeUnknown ? '<p class="time-warning">태어난 시간을 몰라 낮 12시로 임시 계산했습니다. 시주와 대운 시작 시점은 달라질 수 있습니다.</p>' : ''}
     </div>
     ${luckHeroView(data, overall)}
+    ${visualStoryView(data)}
     <div class="compact-section-head"><p>이미지를 고른 명식</p><h2>네 기둥 한눈에 보기</h2></div>
     <div class="pillars" data-testid="pillars">${pillars}</div>
     ${seasonalHarmonyView(data.seasonalHarmony, data.balanceStrategy)}

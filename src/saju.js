@@ -234,6 +234,45 @@ export function getBalanceStrategy(pillars, harmony) {
   }
 }
 
+export function getSajuVisualProfile(data) {
+  const signature = ['year', 'month', 'day', 'time'].map(position => data.pillars?.[position]?.ganZhi).join('/')
+  if (signature !== '丙寅/辛丑/甲戌/癸酉') return null
+
+  return {
+    kind: 'curated-personal',
+    asset: 'personalized/1987-01-25-1830.jpg',
+    title: '따뜻한 빛과 맑은 물을 받는 푸른 강아지',
+    scene: '눈 내리는 차가운 겨울에서 뿌리 있는 태양의 온기가 땅과 물 가까이에 머물고, 푸른 강아지가 맑은 물을 마시며 힘을 얻는 장면입니다.',
+    protagonist: {
+      label: '그림 속의 나',
+      term: '갑목(곧게 자라는 큰 나무)',
+      visual: '갑술일주를 푸른 강아지로 표현했습니다. 세운 귀와 꼬리에는 곧고 진취적인 기상을 담았습니다.',
+    },
+    environment: {
+      label: '내가 놓인 계절',
+      term: '신축월(차갑고 습한 늦겨울)',
+      visual: '눈밭과 굳은 겨울 땅은 실제 출생일의 날씨가 아니라 축월의 계절성을 나타냅니다.',
+    },
+    existingStrength: {
+      label: '이미 가진 힘',
+      term: '병화(태양)',
+      visual: '병인년주의 태양은 인목에 뿌리를 두어 겨울에도 힘 있게 빛나는 원국의 자원입니다.',
+    },
+    neededFunction: {
+      label: '더 필요한 작용',
+      term: '정화(가까이 머무는 온기)',
+      visual: '불꽃을 하나 더 그리지 않고, 따뜻한 빛이 강아지와 땅과 물 가까이에 지속되는 모습으로 표현했습니다.',
+    },
+    support: {
+      label: '나를 살리는 물',
+      term: '계수(이슬과 맑은 물)',
+      visual: '차갑게 얼어붙는 물이 아니라 태양의 온기 아래 갑목을 길러 주는 물로 표현했습니다.',
+    },
+    flow: '유금 → 계수 → 갑목으로 이어지는 가능성을 강아지가 맑은 물을 마시는 행동으로 보여 줍니다.',
+    disclaimer: '원국에 이미 있는 힘과 더 필요한 작용을 구분해 만든 검수 시안입니다.',
+  }
+}
+
 export function getLuckImageGuidance(harmony, strategy = null) {
   const day = DAY_MASTER_GUIDANCE[harmony.dayStem]
   const primaryCandidate = harmony.candidates[0]

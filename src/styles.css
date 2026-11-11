@@ -120,6 +120,23 @@ legend { margin-bottom: 9px; color: var(--muted); font-size: 12px; font-weight: 
 .save-wallpaper:disabled { cursor: wait; opacity: .7; }
 .image-disclaimer { margin: 12px 0 0; color: #85887f; font-size: 10px; line-height: 1.55; }
 
+.visual-story { margin-top: 22px; padding: clamp(26px, 4vw, 46px); border: 1px solid var(--line); border-radius: 30px; background: #fff; }
+.visual-story > header { display: grid; grid-template-columns: 1fr minmax(260px, .7fr); gap: 8px 40px; align-items: end; }
+.visual-story > header p { grid-column: 1 / -1; margin: 0; color: var(--accent); font-size: 11px; font-weight: 800; letter-spacing: .06em; }
+.visual-story > header h2 { margin: 0; font-size: clamp(29px, 4vw, 45px); line-height: 1.15; letter-spacing: -.04em; }
+.visual-story > header > span { color: var(--muted); font-size: 13px; line-height: 1.7; }
+.visual-story-grid { margin-top: 28px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.visual-story-grid article { min-width: 0; padding: 22px; border-radius: 21px; background: #f3f3ee; }
+.visual-story-grid article:nth-child(3) { background: #fff0e5; }
+.visual-story-grid article:nth-child(4) { background: #fff7d9; }
+.visual-story-grid article:nth-child(5) { background: #e5f0f2; }
+.visual-story-grid span, .visual-flow > span { color: var(--muted); font-size: 10px; font-weight: 800; }
+.visual-story-grid h3 { margin: 14px 0 8px; font-size: 20px; line-height: 1.3; letter-spacing: -.025em; }
+.visual-story-grid p { margin: 0; color: #62635d; font-size: 12px; line-height: 1.7; }
+.visual-flow { margin-top: 10px; padding: 23px 25px; border-radius: 21px; background: var(--ink); color: #fff; }
+.visual-flow b { display: block; margin-top: 8px; font-size: 17px; line-height: 1.55; }
+.visual-flow p { margin: 8px 0 0; color: #aeb1a8; font-size: 11px; line-height: 1.6; }
+
 .compact-section-head { margin: 82px 0 24px; }
 .compact-section-head p, .strategy-head > p, .interpretation-head > p:first-child, .reading-basis p, .luck-explorer-head > p, .cycle-detail > header p, .annual-head p, .annual-title p { margin: 0 0 7px; color: var(--accent); font-size: 11px; font-weight: 800; letter-spacing: .06em; }
 .compact-section-head h2, .strategy-head h2, .reading-basis h2 { margin: 0; font-size: clamp(29px, 4vw, 45px); font-weight: 800; line-height: 1.2; letter-spacing: -.04em; }
@@ -283,6 +300,11 @@ footer p { max-width: 740px; margin: 0; }
   .hero-overall.is-collapsed span { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 5; }
   .overall-toggle { min-height: 44px; margin-top: 6px; padding: 0; display: block; border: 0; background: transparent; color: var(--lime); cursor: pointer; font-size: 12px; font-weight: 750; }
   .save-wallpaper { position: sticky; bottom: max(10px, env(safe-area-inset-bottom)); z-index: 4; box-shadow: 0 10px 30px rgba(0,0,0,.28); }
+  .visual-story { padding: 27px 20px; border-radius: 25px; }
+  .visual-story > header { grid-template-columns: 1fr; }
+  .visual-story > header p { grid-column: auto; }
+  .visual-story-grid { grid-template-columns: 1fr; }
+  .visual-story-grid article { padding: 20px; }
   .compact-section-head, .seasonal-harmony, .interpretation, .luck-explorer { margin-top: 68px; }
   .pillars { grid-template-columns: 1fr 1fr; border-radius: 21px; }.pillar { padding: 14px; border-bottom: 1px solid var(--line); }.pillar:nth-child(2) { border-right: 0; }.pillar:nth-child(3), .pillar:nth-child(4) { border-bottom: 0; }.characters b { font-size: 42px; }
   .strategy-grid { grid-template-columns: 1fr; }.strategy-item { min-height: 0; }
