@@ -2,14 +2,14 @@ import { expect, test } from '@playwright/test'
 
 test('생년월일을 입력하면 사주와 근거가 표시된다', async ({ page }) => {
   await page.goto('/')
-  await expect(page.getByRole('heading', { name: '사주로 찾는 나만의 개운 이미지' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: '휴대폰에 저장해 두는 나만의 대박 배경화면' })).toBeVisible()
   await page.getByLabel('태어난 해').fill('1986')
   await page.getByLabel('태어난 달').selectOption('5')
   await page.getByLabel('태어난 날').selectOption('29')
   await page.getByLabel('태어난 시', { exact: true }).selectOption('0')
   await page.getByLabel('태어난 분').selectOption('32')
   await page.getByRole('radio', { name: '남성' }).check()
-  await page.getByRole('button', { name: '내 개운 이미지 찾기' }).click()
+  await page.getByRole('button', { name: '내 대박 배경화면 받기' }).click()
   await expect(page.getByTestId('pillars')).toContainText('丙寅')
   await expect(page.getByTestId('luck-hero')).toContainText('총운에서 고른 개운 이미지')
   await expect(page.getByTestId('luck-hero')).toContainText('우선 보완')
@@ -84,7 +84,7 @@ test('2026년 계미일 명식은 금 우선·수 보조 이미지를 보여 준
   await page.getByLabel('태어난 시', { exact: true }).selectOption('18')
   await page.getByLabel('태어난 분').selectOption('55')
   await page.getByRole('radio', { name: '여성' }).check()
-  await page.getByRole('button', { name: '내 개운 이미지 찾기' }).click()
+  await page.getByRole('button', { name: '내 대박 배경화면 받기' }).click()
   const hero = page.getByTestId('luck-hero')
   await expect(hero).toContainText('금(金)')
   await expect(hero).toContainText('수(水)')
@@ -96,6 +96,6 @@ test('2026년 계미일 명식은 금 우선·수 보조 이미지를 보여 준
 test('필수 동의 없이 계산하지 않는다', async ({ page }) => {
   await page.goto('/')
   await page.getByLabel('개인정보 처리 안내에 동의').uncheck()
-  await page.getByRole('button', { name: '내 개운 이미지 찾기' }).click()
+  await page.getByRole('button', { name: '내 대박 배경화면 받기' }).click()
   await expect(page.getByRole('alert')).toContainText('동의')
 })
