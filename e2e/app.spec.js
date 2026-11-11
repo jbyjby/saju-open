@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 
 test('생년월일을 입력하면 사주와 근거가 표시된다', async ({ page }) => {
   await page.goto('/')
-  await expect(page.getByRole('heading', { name: '내 사주에 필요한 장면을 찾아보세요' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: '사주로 찾는 나만의 개운 이미지' })).toBeVisible()
   await page.getByLabel('태어난 해').fill('1986')
   await page.getByLabel('태어난 달').selectOption('5')
   await page.getByLabel('태어난 날').selectOption('29')
