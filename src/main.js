@@ -185,7 +185,7 @@ function luckHeroView(data, overall) {
     <div class="luck-hero-copy" data-testid="overall-reading">
       <p class="product-kicker">${profile ? '내 사주를 한 장의 물상으로' : '총운에서 고른 개운 이미지'}</p>
       <h2 id="luck-hero-title">${profile?.title || overall.title}</h2>
-      <p class="hero-overall is-collapsed"><b>먼저 읽는 총운</b><span>${overall.body}</span></p>
+      <p class="hero-overall is-collapsed"><b>${profile?.readingLabel || '먼저 읽는 총운'}</b><span>${profile?.overall || overall.body}</span></p>
       <button class="overall-toggle" type="button" aria-expanded="false">총운 전체 읽기</button>
       <div class="strategy-chips" aria-label="보완 전략">
         <span><small>우선 보완</small>${strategy.priority.label}</span>

@@ -185,7 +185,12 @@ describe('해석 규칙', () => {
 
     expect(Object.values(result.pillars).map(pillar => pillar.ganZhi)).toEqual(['丙寅', '辛丑', '甲戌', '癸酉'])
     expect(profile.asset).toBe('personalized/1987-01-25-1830.jpg')
-    expect(profile.protagonist.term).toBe('갑목(곧게 자라는 큰 나무)')
+    expect(profile.title).toBe('차가운 늦겨울, 따뜻한 빛과 맑은 물을 받는 푸른 개')
+    expect(profile.readingLabel).toBe('그림부터 읽는 총운')
+    expect(profile.protagonist.term).toBe('갑술일주(푸른 개)')
+    expect(profile.protagonist.visual).toContain('갑목(곧게 자라는 큰 나무)')
+    expect(profile.overall).toContain('술토(불씨를 품은 늦가을의 마른 땅)')
+    expect(profile.overall).toContain('신축월(차갑고 습한 늦겨울)')
     expect(profile.existingStrength.term).toBe('병화(태양)')
     expect(profile.neededFunction.term).toBe('정화(가까이 머무는 온기)')
     expect(profile.support.term).toBe('계수(이슬과 맑은 물)')
