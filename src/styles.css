@@ -97,7 +97,9 @@ legend { margin-bottom: 9px; color: var(--muted); font-size: 12px; font-weight: 
 
 .luck-hero { min-height: 720px; display: grid; grid-template-columns: minmax(400px, .92fr) minmax(0, 1.08fr); overflow: hidden; border-radius: 34px; background: var(--ink); color: #fff; box-shadow: var(--shadow-strong); }
 .luck-visual { position: relative; min-height: 720px; margin: 0; overflow: hidden; background: #34352f; }
-.luck-visual img { width: 100%; height: 100%; display: block; object-fit: cover; }
+.luck-visual img, .layered-wallpaper { width: 100%; height: 100%; display: block; object-fit: cover; }
+.layered-wallpaper { background: #dfe7e7; }
+.layered-fallback[hidden] { display: none; }
 .luck-visual::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 55%, rgba(0,0,0,.58)); pointer-events: none; }
 .image-badge { position: absolute; z-index: 1; left: 24px; right: 24px; bottom: 24px; padding: 15px 17px; display: flex; align-items: center; justify-content: space-between; gap: 16px; border-radius: 17px; background: rgba(20, 21, 18, .7); backdrop-filter: blur(14px); }
 .image-badge span { color: #d5d7ce; font-size: 11px; }
@@ -105,6 +107,8 @@ legend { margin-bottom: 9px; color: var(--muted); font-size: 12px; font-weight: 
 .luck-hero-copy { padding: clamp(38px, 5vw, 72px); align-self: center; }
 .product-kicker { margin: 0 0 20px; color: var(--lime); font-size: 12px; font-weight: 800; letter-spacing: .07em; }
 .luck-hero-copy > h2 { margin: 0; font-size: clamp(38px, 5vw, 62px); font-weight: 800; line-height: 1.12; letter-spacing: -.055em; text-wrap: balance; }
+.visual-tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 20px; }
+.visual-tags span { padding: 7px 10px; border: 1px solid #464840; border-radius: 999px; color: #d9dbd3; font-size: 11px; font-weight: 700; }
 .hero-overall { margin: 26px 0 0; color: #c7c9c1; font-size: 15px; line-height: 1.85; }
 .hero-overall b { display: block; margin-bottom: 8px; color: #fff; font-size: 12px; }
 .overall-toggle { display: none; }
@@ -252,6 +256,14 @@ summary { min-height: 60px; padding: 18px 2px; cursor: pointer; font-size: 13px;
 .annual-section { margin-top: 58px; padding-top: 38px; border-top: 1px solid var(--line); }
 .annual-title h4 { margin: 0; font-size: 25px; }
 .annual-detail { padding: 30px; border-radius: 0 0 23px 23px; background: #e6e6df; }
+.final-luck-image { margin-top: 94px; display: grid; grid-template-columns: minmax(0, 1.02fr) minmax(390px, .98fr); overflow: hidden; border-radius: 34px; background: var(--ink); color: #fff; box-shadow: var(--shadow-strong); }
+.final-luck-copy { padding: clamp(36px, 5vw, 70px); align-self: center; }
+.final-luck-copy h2 { margin: 0; font-size: clamp(36px, 5vw, 58px); line-height: 1.12; letter-spacing: -.05em; text-wrap: balance; }
+.final-luck-copy > p:not(.product-kicker):not(.image-disclaimer) { margin: 22px 0 0; color: #bec0b8; font-size: 14px; line-height: 1.8; }
+.final-luck-visual { min-height: 720px; }
+.layer-formula { margin-top: 28px; display: flex; flex-wrap: wrap; align-items: center; gap: 7px; }
+.layer-formula span { padding: 8px 10px; border-radius: 10px; background: #2d2f29; color: #d7d9d1; font-size: 10px; font-weight: 700; }
+.layer-formula i { color: var(--lime); font-style: normal; font-weight: 800; }
 .calculation-receipt { margin-top: 50px; padding: 25px; border-radius: 20px; background: #e1e1db; }
 .calculation-receipt h3 { margin: 0 0 13px; font-size: 19px; }
 .calculation-receipt dl { margin: 0; }.calculation-receipt dl div { display: grid; grid-template-columns: 170px 1fr; gap: 18px; padding: 8px 0; border-top: 1px solid #cacaC3; font-size: 11px; }.calculation-receipt dt { color: var(--muted); }.calculation-receipt dd { margin: 0; }
@@ -318,6 +330,9 @@ footer p { max-width: 740px; margin: 0; }
   .fortune-evidence { grid-template-columns: 1fr; padding: 18px; }.evidence-note { grid-column: auto; }
   .fortune-areas { grid-template-columns: 1fr; }.fortune-areas article:last-child { grid-column: auto; }
   .annual-detail { padding: 24px 16px; }
+  .final-luck-image { margin-top: 68px; grid-template-columns: 1fr; border-radius: 27px; }
+  .final-luck-copy { padding: 30px 23px 27px; }
+  .final-luck-visual { min-height: 0; aspect-ratio: 4 / 5; grid-row: 1; }
   .calculation-receipt { padding: 20px 16px; }.calculation-receipt dl div { grid-template-columns: 1fr; gap: 2px; }
   .research-grid { grid-template-columns: 1fr; }
   footer { padding: 24px 20px 40px; flex-direction: column; }

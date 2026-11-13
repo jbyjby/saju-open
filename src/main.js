@@ -166,25 +166,39 @@ function imagePresentation(data) {
     profile,
     guidance,
     imageUrl: profile
-      ? `${import.meta.env.BASE_URL}luck-images/${profile.asset}`
+      ? `${import.meta.env.BASE_URL}luck-images/${profile.natalAsset}`
       : `${import.meta.env.BASE_URL}luck-images/${guidance.neededElement}.jpg`,
+    luckImageUrl: profile
+      ? `${import.meta.env.BASE_URL}luck-images/${profile.luckAsset}`
+      : null,
   }
+}
+
+function layeredCanvas(profile, variant, fallbackUrl, alt) {
+  const count = profile.layers[variant].length
+  return `<canvas class="layered-wallpaper" width="1536" height="2752" role="img" aria-label="${alt}" data-layered-canvas="${variant}" data-layer-count="${count}" data-layer-ready="false"></canvas>
+    <img class="layered-fallback" src="${fallbackUrl}" alt="${alt}" hidden />`
 }
 
 function luckHeroView(data, overall) {
   const strategy = data.balanceStrategy
   const { profile, guidance, imageUrl } = imagePresentation(data)
   const imageAlt = profile
-    ? `개인 물상 이미지 — ${profile.title}`
+    ? `원국 물상 이미지 — ${profile.title}`
     : `계절 균형 이미지 — ${strategy.priority.label}을 중심으로 ${strategy.support.label}을 함께 담은 휴대폰 배경`
+  const visual = profile?.layers
+    ? layeredCanvas(profile, 'natal', imageUrl, imageAlt)
+    : `<img src="${imageUrl}" alt="${imageAlt}" />`
+  const saveButton = profile ? '' : '<button class="save-wallpaper" type="button" data-download-wallpaper><span>휴대폰에 이미지 저장</span><b aria-hidden="true">↓</b></button>'
   return `<section class="luck-hero" data-testid="luck-hero" aria-labelledby="luck-hero-title">
     <figure class="luck-visual">
-      <img src="${imageUrl}" alt="${imageAlt}" />
-      <div class="image-badge"><span>${profile ? '검수된 개인 물상 시안' : '검수된 기본형 배경화면'}</span><b>${profile ? '원국 × 필요한 작용' : `${strategy.priority.label} × ${strategy.support.label}`}</b></div>
+      ${visual}
+      <div class="image-badge"><span>${profile ? '검수된 레이어 합성 원국' : '검수된 기본형 배경화면'}</span><b>${profile ? '환경 + 태양 + 물 + 갑술 주인공' : `${strategy.priority.label} × ${strategy.support.label}`}</b></div>
     </figure>
     <div class="luck-hero-copy" data-testid="overall-reading">
-      <p class="product-kicker">${profile ? '내 사주를 한 장의 물상으로' : '총운에서 고른 개운 이미지'}</p>
+      <p class="product-kicker">${profile ? `01 · ${profile.natalLabel}` : '총운에서 고른 개운 이미지'}</p>
       <h2 id="luck-hero-title">${profile?.title || overall.title}</h2>
+      ${profile ? `<div class="visual-tags" aria-label="핵심 해시태그">${profile.tags.map(tag => `<span>${tag}</span>`).join('')}</div>` : ''}
       <p class="hero-overall is-collapsed"><b>${profile?.readingLabel || '먼저 읽는 총운'}</b><span>${profile?.overall || overall.body}</span></p>
       <button class="overall-toggle" type="button" aria-expanded="false">총운 전체 읽기</button>
       <div class="strategy-chips" aria-label="보완 전략">
@@ -192,7 +206,7 @@ function luckHeroView(data, overall) {
         <span><small>함께 보완</small>${strategy.support.label}</span>
       </div>
       <div class="hero-reason"><h3>왜 이 장면인가요?</h3><p>${profile?.scene || guidance.whyNeeded}</p></div>
-      <button class="save-wallpaper" type="button" data-download-wallpaper><span>휴대폰에 이미지 저장</span><b aria-hidden="true">↓</b></button>
+      ${saveButton}
       <p class="image-disclaimer">이미지는 필요한 태도를 떠올리는 배경화면입니다. 저장만으로 운의 변화나 특정 결과를 보장하지 않습니다.</p>
     </div>
   </section>`
@@ -219,10 +233,6 @@ function seasonalHarmonyView(harmony, strategy) {
   const guidance = getLuckImageGuidance(harmony, strategy)
   const conditional = strategy.conditional.map(item => `<li><b class="element-${item.element}">${item.label}</b><span>${item.reason}</span></li>`).join('')
   const caution = strategy.caution.map(item => `<li><b class="element-${item.element}">${item.label}</b><span>${item.reason}</span></li>`).join('')
-  const tableCandidates = harmony.candidates.map(item => {
-    const location = item.visible ? '천간에 드러남' : item.hidden ? '지장간에 있음' : '원국에서 뚜렷하지 않음'
-    return `<li><b>${item.stem} ${item.elementKo}(${item.elementHanja})</b><span>${location}</span></li>`
-  }).join('')
   return `<section class="seasonal-harmony" data-testid="seasonal-harmony" aria-labelledby="seasonal-harmony-title">
     <header class="strategy-head">
       <p>월령표를 명식 전체로 다시 검토했습니다</p>
@@ -241,14 +251,69 @@ function seasonalHarmonyView(harmony, strategy) {
       <div><p>이미지를 생활에서 쓰는 법</p><h3>화면을 볼 때마다 이 세 가지를 떠올리세요</h3><span>${guidance.definition}</span></div>
       <div><ol>${guidance.practice.map((item, index) => `<li><span>0${index + 1}</span>${item}</li>`).join('')}</ol><p class="save-reason">${guidance.saveReason}</p></div>
     </div>
-    <details class="harmony-evidence">
-      <summary>판정 근거와 한계</summary>
-      <div class="evidence-columns">
-        <div><h4>계절 후보</h4><ul>${tableCandidates}</ul></div>
-        <div><h4>종합 재검토</h4><p>${strategy.note}</p><p>${harmony.source}</p><p>${strategy.evidenceId} · ${harmony.evidenceId}</p></div>
-      </div>
-    </details>
   </section>`
+}
+
+function finalLuckImageView(data) {
+  const { profile, luckImageUrl } = imagePresentation(data)
+  if (!profile?.layers) return ''
+  const imageAlt = `개운 이미지 — ${profile.luckTitle}`
+  return `<section class="final-luck-image" data-testid="final-luck-image" aria-labelledby="final-luck-title">
+    <div class="final-luck-copy">
+      <p class="product-kicker">12 · ${profile.luckLabel}</p>
+      <h2 id="final-luck-title">${profile.luckTitle}</h2>
+      <p>${profile.disclaimer}</p>
+      <div class="layer-formula" aria-label="개운 이미지 레이어 구성">
+        <span>신축월 겨울 환경</span><i>+</i><span>병인 태양</span><i>+</i><span>계유 물</span><i>+</i><span>정화 온기</span><i>+</i><span>물을 받는 갑술 주인공</span>
+      </div>
+      <button class="save-wallpaper" type="button" data-download-wallpaper disabled><span>휴대폰에 이미지 저장</span><b aria-hidden="true">↓</b></button>
+      <p class="image-disclaimer">이 이미지는 행운을 보장하는 부적이 아니라, 필요한 방향을 떠올리게 하는 상징적 배경화면입니다.</p>
+    </div>
+    <figure class="luck-visual final-luck-visual">
+      ${layeredCanvas(profile, 'luck', luckImageUrl, imageAlt)}
+      <div class="image-badge"><span>검수된 레이어 합성 개운본</span><b>같은 주인공의 변화 이후 장면</b></div>
+    </figure>
+  </section>`
+}
+
+function layerUrl(profile, file) {
+  return `${import.meta.env.BASE_URL}luck-images/${profile.layers.basePath}/${file}`
+}
+
+function loadLayer(url) {
+  return new Promise((resolve, reject) => {
+    const image = new Image()
+    image.onload = () => resolve(image)
+    image.onerror = () => reject(new Error(`레이어를 불러오지 못했습니다: ${url}`))
+    image.src = url
+  })
+}
+
+async function drawLayerStack(canvas, profile, variant) {
+  const images = await Promise.all(profile.layers[variant].map(file => loadLayer(layerUrl(profile, file))))
+  const context = canvas.getContext('2d')
+  context.clearRect(0, 0, canvas.width, canvas.height)
+  images.forEach(image => context.drawImage(image, 0, 0, canvas.width, canvas.height))
+  canvas.dataset.layerReady = 'true'
+}
+
+async function setupLayeredCanvases(data) {
+  const profile = getSajuVisualProfile(data)
+  if (!profile?.layers) return
+  const canvases = [...result.querySelectorAll('[data-layered-canvas]')]
+  await Promise.all(canvases.map(async canvas => {
+    try {
+      await drawLayerStack(canvas, profile, canvas.dataset.layeredCanvas)
+    } catch (error) {
+      canvas.dataset.layerReady = 'error'
+      canvas.hidden = true
+      const fallback = canvas.nextElementSibling
+      if (fallback?.classList.contains('layered-fallback')) fallback.hidden = false
+      console.error(error)
+    }
+  }))
+  const button = result.querySelector('[data-download-wallpaper]')
+  if (button) button.disabled = false
 }
 
 async function downloadWallpaper(imageUrl, harmony) {
@@ -262,14 +327,32 @@ async function downloadWallpaper(imageUrl, harmony) {
   window.setTimeout(() => URL.revokeObjectURL(targetUrl), 1000)
 }
 
+async function downloadCanvas(canvas, harmony) {
+  const blob = await new Promise((resolve, reject) => {
+    canvas.toBlob(value => value ? resolve(value) : reject(new Error('이미지를 저장할 수 없습니다.')), 'image/jpeg', 0.94)
+  })
+  const targetUrl = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = targetUrl
+  link.download = `sai-personal-luck-${harmony.dayStem}-${harmony.monthBranch}.jpg`
+  link.click()
+  window.setTimeout(() => URL.revokeObjectURL(targetUrl), 1000)
+}
+
 function setupWallpaper(data) {
   const button = result.querySelector('[data-download-wallpaper]')
-  const { imageUrl } = imagePresentation(data)
+  if (!button) return
+  const { profile, imageUrl, luckImageUrl } = imagePresentation(data)
   button.addEventListener('click', async () => {
     button.disabled = true
     button.textContent = '저장하는 중…'
     try {
-      await downloadWallpaper(imageUrl, data.seasonalHarmony)
+      const canvas = result.querySelector('canvas[data-layered-canvas="luck"]')
+      if (profile?.layers && canvas?.dataset.layerReady === 'true') {
+        await downloadCanvas(canvas, data.seasonalHarmony)
+      } else {
+        await downloadWallpaper(profile ? luckImageUrl : imageUrl, data.seasonalHarmony)
+      }
       button.textContent = '저장 완료'
     } catch (error) {
       button.textContent = error.message
@@ -361,6 +444,7 @@ function renderResult(data, timeUnknown) {
       <div class="cycle-tabs" role="tablist" aria-label="대운 선택">${cycleTabs}</div>
       <div data-cycle-panel></div>
     </section>
+    ${finalLuckImageView(data)}
     <div class="calculation-receipt">
       <h3>계산에 사용한 기준</h3>
       <dl>
@@ -374,6 +458,7 @@ function renderResult(data, timeUnknown) {
   result.hidden = false
   setupLuckExplorer(data)
   setupWallpaper(data)
+  setupLayeredCanvases(data)
   setupOverallToggle()
   result.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' })
 }

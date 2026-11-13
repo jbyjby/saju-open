@@ -185,7 +185,29 @@ describe('해석 규칙', () => {
 
     expect(Object.values(result.pillars).map(pillar => pillar.ganZhi)).toEqual(['丙寅', '辛丑', '甲戌', '癸酉'])
     expect(profile.asset).toBe('personalized/1987-01-25-1830.jpg')
+    expect(profile.natalAsset).toBe('personalized/1987-01-25-1830-natal.jpg')
+    expect(profile.luckAsset).toBe('personalized/1987-01-25-1830-luck.jpg')
+    expect(profile.layers).toEqual({
+      basePath: 'personalized/1987-01-25-1830-layers',
+      natal: [
+        'layer-01-environment-base.jpg',
+        'layer-02-rooted-sun.png',
+        'layer-03-clear-water.png',
+        'layer-04-blue-dog-base.png',
+      ],
+      luck: [
+        'layer-01-environment-base.jpg',
+        'layer-02-rooted-sun.png',
+        'layer-03-clear-water.png',
+        'layer-06-nearby-warmth.png',
+        'layer-05-blue-dog-luck.png',
+      ],
+    })
+    expect(profile.natalLabel).toBe('내 사주 원국 물상 이미지')
+    expect(profile.luckLabel).toBe('나만의 개운 이미지')
+    expect(profile.luckTitle).toBe('따뜻한 온기와 맑은 물을 받아 힘을 얻는 푸른 개')
     expect(profile.title).toBe('차가운 늦겨울, 따뜻한 빛과 맑은 물을 받는 푸른 개')
+    expect(profile.tags).toEqual(['#큰나무의기상', '#갑술푸른개', '#신축늦겨울', '#병화태양', '#계수맑은물'])
     expect(profile.readingLabel).toBe('그림부터 읽는 총운')
     expect(profile.protagonist.term).toBe('갑술일주(푸른 개)')
     expect(profile.protagonist.visual).toContain('갑목(곧게 자라는 큰 나무)')
