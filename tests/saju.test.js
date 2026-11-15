@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   calculateSaju,
+  ELEMENTS,
   directDayGanZhi,
   directTimeGanZhi,
   convertLunarToSolar,
@@ -174,6 +175,56 @@ describe('해석 규칙', () => {
     expect(guidance.supportElement).toBe('water')
     expect(guidance.whyNeeded).toContain('금')
     expect(guidance.whyNeeded).toContain('수')
+  })
+
+  it('모든 명식에 월령 환경·일지 동물·보완 오행 레이어를 만든다', () => {
+    const summerRooster = calculateSaju({
+      calendar: 'solar', year: 1986, month: 5, day: 29,
+      hour: 0, minute: 32, gender: 'male',
+    })
+    const summerProfile = getSajuVisualProfile(summerRooster)
+
+    expect(summerProfile.kind).toBe('generic-layered')
+    expect(summerProfile.layers).toMatchObject({
+      basePath: 'generic-layers',
+      natal: [
+        'environments/summer.jpg',
+        'effects/fire.png',
+        'effects/water.png',
+        'protagonists/rooster.png',
+      ],
+      luck: [
+        'environments/summer.jpg',
+        'effects/fire.png',
+        'effects/water.png',
+        'effects/metal.png',
+        'effects/wood.png',
+        'protagonists/rooster.png',
+      ],
+    })
+    expect(summerProfile.characterTint).toBe(ELEMENTS.water.color)
+    expect(summerProfile.protagonist.term).toContain('계유일주')
+    expect(summerProfile.protagonist.term).toContain('수탉')
+    expect(summerProfile.protagonist.visual).toContain('계수(水)')
+    expect(summerProfile.overall).toContain('수탉은 모습')
+    expect(summerProfile.overall).not.toContain('수탉는')
+    expect(summerProfile.scene).toContain('물빛 수탉이 서 있고')
+    expect(summerProfile.environment.term).toContain('계사월')
+    expect(summerProfile.neededFunction.term).toContain('금(金)')
+    expect(summerProfile.support.term).toContain('목(木)')
+    expect(summerProfile.tags).toHaveLength(5)
+
+    const winterHorse = calculateSaju({
+      calendar: 'solar', year: 2000, month: 1, day: 1,
+      hour: 12, minute: 32, gender: 'female',
+    })
+    const winterProfile = getSajuVisualProfile(winterHorse)
+    expect(winterProfile.layers.natal).toEqual([
+      'environments/winter.jpg',
+      'effects/earth.png',
+      'protagonists/horse.png',
+    ])
+    expect(winterProfile.protagonist.term).toContain('말')
   })
 
   it('예시 명식을 원국 물상과 필요한 작용으로 분리한다', () => {

@@ -234,11 +234,47 @@ export function getBalanceStrategy(pillars, harmony) {
   }
 }
 
+const BRANCH_VISUALS = {
+  子: { key: 'rat', animal: '쥐' }, 丑: { key: 'ox', animal: '소' },
+  寅: { key: 'tiger', animal: '호랑이' }, 卯: { key: 'rabbit', animal: '토끼' },
+  辰: { key: 'dragon', animal: '용' }, 巳: { key: 'snake', animal: '뱀' },
+  午: { key: 'horse', animal: '말' }, 未: { key: 'goat', animal: '양' },
+  申: { key: 'monkey', animal: '원숭이' }, 酉: { key: 'rooster', animal: '수탉' },
+  戌: { key: 'dog', animal: '개' }, 亥: { key: 'pig', animal: '돼지' },
+}
+
+const MONTH_VISUALS = {
+  寅: { key: 'spring', label: '찬 기운이 남은 초봄' }, 卯: { key: 'spring', label: '새싹이 자라는 봄' }, 辰: { key: 'spring', label: '비를 머금은 늦봄' },
+  巳: { key: 'summer', label: '빛이 짙어지는 초여름' }, 午: { key: 'summer', label: '햇살이 강한 한여름' }, 未: { key: 'summer', label: '습기를 머금은 늦여름' },
+  申: { key: 'autumn', label: '바람이 마르는 초가을' }, 酉: { key: 'autumn', label: '맑고 서늘한 가을' }, 戌: { key: 'autumn', label: '빛이 깊어지는 늦가을' },
+  亥: { key: 'winter', label: '안개가 감도는 초겨울' }, 子: { key: 'winter', label: '눈빛이 깊은 한겨울' }, 丑: { key: 'winter', label: '차고 습한 늦겨울' },
+}
+
+const ELEMENT_VISUAL_NAMES = {
+  wood: '푸른', fire: '붉은', earth: '황금빛', metal: '은빛', water: '물빛',
+}
+
+const STEM_KO = { 甲: '갑', 乙: '을', 丙: '병', 丁: '정', 戊: '무', 己: '기', 庚: '경', 辛: '신', 壬: '임', 癸: '계' }
+const BRANCH_KO = { 子: '자', 丑: '축', 寅: '인', 卯: '묘', 辰: '진', 巳: '사', 午: '오', 未: '미', 申: '신', 酉: '유', 戌: '술', 亥: '해' }
+
+function ganZhiKo(pillar) {
+  return `${STEM_KO[pillar.stem] || pillar.stem}${BRANCH_KO[pillar.branch] || pillar.branch}`
+}
+
+function stemTerm(stem) {
+  const element = ELEMENTS[STEM_ELEMENT[stem]]
+  return `${STEM_KO[stem]}${element.ko}(${element.hanja})`
+}
+
+function withParticle(word, consonantForm, vowelForm) {
+  const last = word.charCodeAt(word.length - 1)
+  const hasBatchim = last >= 0xac00 && last <= 0xd7a3 && (last - 0xac00) % 28 !== 0
+  return `${word}${hasBatchim ? consonantForm : vowelForm}`
+}
+
 export function getSajuVisualProfile(data) {
   const signature = ['year', 'month', 'day', 'time'].map(position => data.pillars?.[position]?.ganZhi).join('/')
-  if (signature !== '丙寅/辛丑/甲戌/癸酉') return null
-
-  return {
+  if (signature === '丙寅/辛丑/甲戌/癸酉') return {
     kind: 'curated-personal',
     asset: 'personalized/1987-01-25-1830.jpg',
     natalAsset: 'personalized/1987-01-25-1830-natal.jpg',
@@ -259,6 +295,7 @@ export function getSajuVisualProfile(data) {
         'layer-05-blue-dog-luck.png',
       ],
     },
+    layerFormula: ['신축월 겨울 환경', '병인 태양', '계유 물', '정화 온기', '물을 받는 갑술 주인공'],
     natalLabel: '내 사주 원국 물상 이미지',
     luckLabel: '나만의 개운 이미지',
     luckTitle: '따뜻한 온기와 맑은 물을 받아 힘을 얻는 푸른 개',
@@ -294,6 +331,89 @@ export function getSajuVisualProfile(data) {
     },
     flow: '유금 → 계수 → 갑목으로 이어지는 가능성을 강아지가 맑은 물을 마시는 행동으로 보여 줍니다.',
     disclaimer: '원국에 이미 있는 힘과 더 필요한 작용을 구분해 만든 검수 시안입니다.',
+  }
+
+  const day = data.pillars?.day
+  const month = data.pillars?.month
+  const year = data.pillars?.year
+  const hour = data.pillars?.time
+  const animal = BRANCH_VISUALS[day?.branch]
+  const environment = MONTH_VISUALS[month?.branch]
+  const dayElement = STEM_ELEMENT[day?.stem]
+  const priority = data.balanceStrategy?.priority
+  const support = data.balanceStrategy?.support
+  const yearElement = STEM_ELEMENT[year?.stem]
+  const hourElement = STEM_ELEMENT[hour?.stem]
+  if (!animal || !environment || !dayElement || !yearElement || !hourElement || !priority || !support) {
+    throw new Error('범용 물상 이미지를 만들 명식 정보가 부족합니다.')
+  }
+  const coloredAnimal = `${ELEMENT_VISUAL_NAMES[dayElement]} ${animal.animal}`
+  const environmentLayer = `environments/${environment.key}.jpg`
+  const protagonistLayer = `protagonists/${animal.key}.png`
+  const innateEffects = [...new Set([yearElement, hourElement])].map(element => `effects/${element}.png`)
+  const luckEffects = [...new Set([yearElement, hourElement, priority.element, support.element])]
+    .map(element => `effects/${element}.png`)
+  const dayImage = DAY_MASTER[day.stem]
+  const yearImage = DAY_MASTER[year.stem]
+  const dayName = ganZhiKo(day)
+  const monthName = ganZhiKo(month)
+  const yearName = ganZhiKo(year)
+  const hourName = ganZhiKo(hour)
+
+  return {
+    kind: 'generic-layered',
+    asset: `${priority.element}.jpg`,
+    natalAsset: `${dayElement}.jpg`,
+    luckAsset: `${priority.element}.jpg`,
+    characterTint: ELEMENTS[dayElement].color,
+    layers: {
+      basePath: 'generic-layers',
+      natal: [environmentLayer, ...innateEffects, protagonistLayer],
+      luck: [environmentLayer, ...luckEffects, protagonistLayer],
+    },
+    layerFormula: [
+      `${monthName}월 ${environment.label}`,
+      `${yearName}년 ${ELEMENTS[yearElement].ko}의 큰 힘`,
+      `${hourName}시 ${ELEMENTS[hourElement].ko}의 보조 신호`,
+      priority.label,
+      support.label,
+      `${dayName}일주 ${coloredAnimal}`,
+    ],
+    natalLabel: '내 사주 원국 물상 이미지',
+    luckLabel: '나만의 개운 이미지',
+    luckTitle: `${priority.label}과 ${support.label}의 도움을 받는 ${coloredAnimal}`,
+    title: `${environment.label}에 선 ${coloredAnimal}`,
+    tags: [`#${dayName}일주`, `#${coloredAnimal.replaceAll(' ', '')}`, `#${monthName}${environment.label.replaceAll(' ', '')}`, `#${yearName}${yearImage[0]}`, `#${priority.label.replace(/[()]/g, '')}보완`],
+    readingLabel: '그림부터 읽는 총운',
+    overall: `당신을 가장 가까이 보여 주는 물상은 ${dayName}일주(${coloredAnimal})입니다. ${stemTerm(day.stem)}의 ${dayImage[0]} 물상은 주인공의 색과 자세에, ${BRANCH_KO[day.branch]}의 ${withParticle(animal.animal, '은', '는')} 모습에 담았습니다. 배경은 ${monthName}월의 ${environment.label}을 나타냅니다. ${yearName}년주의 ${yearImage[0]} 물상은 장면 전체에 영향을 주는 원국의 큰 힘으로, ${hourName}시주의 ${ELEMENTS[hourElement].ko} 기운은 가까운 보조 신호로 겹쳤습니다. 개운 이미지에는 ${priority.label}을 먼저, ${support.label}을 함께 더해 지금 필요한 방향을 한눈에 떠올리도록 했습니다.`,
+    scene: `${environment.label}의 배경에서 ${withParticle(coloredAnimal, '이', '가')} 서 있고, ${priority.label}과 ${support.label}을 상징하는 빛과 자연의 흐름이 주인공에게 이어지는 장면입니다.`,
+    protagonist: {
+      label: '그림 속의 나',
+      term: `${dayName}일주(${coloredAnimal})`,
+      visual: `${stemTerm(day.stem)}의 ${dayImage[0]} 물상은 색과 자세에, ${BRANCH_KO[day.branch]}의 ${withParticle(animal.animal, '은', '는')} 주인공의 형태에 담았습니다.`,
+    },
+    environment: {
+      label: '내가 놓인 계절',
+      term: `${monthName}월(${environment.label})`,
+      visual: `배경의 계절은 실제 출생일 날씨가 아니라 월령의 온도와 습도를 상징합니다.`,
+    },
+    existingStrength: {
+      label: '이미 가진 큰 힘',
+      term: `${stemTerm(year.stem)}(${yearImage[0]})`,
+      visual: `${yearName}년주의 물상을 멀리서 장면 전체에 영향을 주는 빛과 지형의 힘으로 읽었습니다.`,
+    },
+    neededFunction: {
+      label: '더 필요한 작용',
+      term: priority.label,
+      visual: `${priority.reason} 개운 이미지에서는 이 작용을 가장 먼저 보이는 자연 효과로 더했습니다.`,
+    },
+    support: {
+      label: '함께 받치는 작용',
+      term: support.label,
+      visual: `${support.reason} 주된 보완을 빼앗지 않는 보조 흐름으로 표현했습니다.`,
+    },
+    flow: `${priority.label} → ${support.label} → ${dayName} ${animal.animal}로 이어지는 보완 흐름입니다.`,
+    disclaimer: '사전에 검수한 계절·동물·오행 래스터 레이어를 명식 규칙에 따라 조합한 상징 이미지입니다.',
   }
 }
 

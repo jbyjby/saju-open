@@ -189,16 +189,16 @@ function luckHeroView(data, overall) {
   const visual = profile?.layers
     ? layeredCanvas(profile, 'natal', imageUrl, imageAlt)
     : `<img src="${imageUrl}" alt="${imageAlt}" />`
-  const saveButton = profile ? '' : '<button class="save-wallpaper" type="button" data-download-wallpaper><span>휴대폰에 이미지 저장</span><b aria-hidden="true">↓</b></button>'
+  const saveButton = profile?.layers ? '' : '<button class="save-wallpaper" type="button" data-download-wallpaper><span>휴대폰에 이미지 저장</span><b aria-hidden="true">↓</b></button>'
   return `<section class="luck-hero" data-testid="luck-hero" aria-labelledby="luck-hero-title">
     <figure class="luck-visual">
       ${visual}
-      <div class="image-badge"><span>${profile ? '검수된 레이어 합성 원국' : '검수된 기본형 배경화면'}</span><b>${profile ? '환경 + 태양 + 물 + 갑술 주인공' : `${strategy.priority.label} × ${strategy.support.label}`}</b></div>
+      <div class="image-badge"><span>${profile?.layers ? '검수된 레이어 합성 원국' : '검수된 기본형 배경화면'}</span><b>${profile?.layers ? profile.layerFormula.filter((_, index) => index === 0 || index === profile.layerFormula.length - 1).join(' + ') : `${strategy.priority.label} × ${strategy.support.label}`}</b></div>
     </figure>
     <div class="luck-hero-copy" data-testid="overall-reading">
-      <p class="product-kicker">${profile ? `01 · ${profile.natalLabel}` : '총운에서 고른 개운 이미지'}</p>
+      <p class="product-kicker">${profile?.layers ? `01 · ${profile.natalLabel}` : '총운에서 고른 개운 이미지'}</p>
       <h2 id="luck-hero-title">${profile?.title || overall.title}</h2>
-      ${profile ? `<div class="visual-tags" aria-label="핵심 해시태그">${profile.tags.map(tag => `<span>${tag}</span>`).join('')}</div>` : ''}
+      ${profile?.layers ? `<div class="visual-tags" aria-label="핵심 해시태그">${profile.tags.map(tag => `<span>${tag}</span>`).join('')}</div>` : ''}
       <p class="hero-overall is-collapsed"><b>${profile?.readingLabel || '먼저 읽는 총운'}</b><span>${profile?.overall || overall.body}</span></p>
       <button class="overall-toggle" type="button" aria-expanded="false">총운 전체 읽기</button>
       <div class="strategy-chips" aria-label="보완 전략">
@@ -263,9 +263,7 @@ function finalLuckImageView(data) {
       <p class="product-kicker">12 · ${profile.luckLabel}</p>
       <h2 id="final-luck-title">${profile.luckTitle}</h2>
       <p>${profile.disclaimer}</p>
-      <div class="layer-formula" aria-label="개운 이미지 레이어 구성">
-        <span>신축월 겨울 환경</span><i>+</i><span>병인 태양</span><i>+</i><span>계유 물</span><i>+</i><span>정화 온기</span><i>+</i><span>물을 받는 갑술 주인공</span>
-      </div>
+      <div class="layer-formula" aria-label="개운 이미지 레이어 구성">${profile.layerFormula.map((item, index) => `${index ? '<i>+</i>' : ''}<span>${item}</span>`).join('')}</div>
       <button class="save-wallpaper" type="button" data-download-wallpaper disabled><span>휴대폰에 이미지 저장</span><b aria-hidden="true">↓</b></button>
       <p class="image-disclaimer">이 이미지는 행운을 보장하는 부적이 아니라, 필요한 방향을 떠올리게 하는 상징적 배경화면입니다.</p>
     </div>
@@ -289,11 +287,31 @@ function loadLayer(url) {
   })
 }
 
+function drawTintedLayer(context, image, canvas, tint) {
+  const scratch = document.createElement('canvas')
+  scratch.width = canvas.width
+  scratch.height = canvas.height
+  const scratchContext = scratch.getContext('2d')
+  scratchContext.drawImage(image, 0, 0, canvas.width, canvas.height)
+  scratchContext.globalCompositeOperation = 'source-atop'
+  scratchContext.globalAlpha = 0.48
+  scratchContext.fillStyle = tint
+  scratchContext.fillRect(0, 0, canvas.width, canvas.height)
+  context.drawImage(scratch, 0, 0)
+}
+
 async function drawLayerStack(canvas, profile, variant) {
-  const images = await Promise.all(profile.layers[variant].map(file => loadLayer(layerUrl(profile, file))))
+  const files = profile.layers[variant]
+  const images = await Promise.all(files.map(file => loadLayer(layerUrl(profile, file))))
   const context = canvas.getContext('2d')
   context.clearRect(0, 0, canvas.width, canvas.height)
-  images.forEach(image => context.drawImage(image, 0, 0, canvas.width, canvas.height))
+  images.forEach((image, index) => {
+    if (profile.characterTint && files[index].startsWith('protagonists/')) {
+      drawTintedLayer(context, image, canvas, profile.characterTint)
+    } else {
+      context.drawImage(image, 0, 0, canvas.width, canvas.height)
+    }
+  })
   canvas.dataset.layerReady = 'true'
 }
 
