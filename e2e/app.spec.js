@@ -1,5 +1,15 @@
 import { expect, test } from '@playwright/test'
 
+test('홈 화면은 계절과 동물을 조합한 귀여운 배경화면 3종을 보여 준다', async ({ page }) => {
+  await page.goto('/')
+  const images = page.locator('.intro-gallery img[src*="home-cute-"]')
+  await expect(images).toHaveCount(3)
+  await expect(images.nth(0)).toHaveAttribute('src', /home-cute-spring-rabbit\.jpg$/)
+  await expect(images.nth(1)).toHaveAttribute('src', /home-cute-summer-dragon\.jpg$/)
+  await expect(images.nth(2)).toHaveAttribute('src', /home-cute-winter-dog\.jpg$/)
+  await expect.poll(async () => images.evaluateAll((items) => items.every((image) => image.complete && image.naturalWidth > 0))).toBe(true)
+})
+
 test('생년월일을 입력하면 사주와 근거가 표시된다', async ({ page }) => {
   await page.goto('/')
   await expect(page.getByRole('heading', { name: '휴대폰에 저장해 두는 나만의 대박 배경화면' })).toBeVisible()
