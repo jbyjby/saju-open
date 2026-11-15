@@ -177,25 +177,31 @@ describe('해석 규칙', () => {
     expect(guidance.whyNeeded).toContain('수')
   })
 
-  it('같은 명식에는 같은 포즈를 고르고 여러 명식에는 세 포즈를 모두 배분한다', () => {
-    const samples = [
-      { day: 1, pose: 'upright', path: 'protagonists/rat-upright.png' },
-      { day: 3, pose: 'jump', path: 'protagonists/tiger-jump.png' },
-      { day: 6, pose: 'side', path: 'protagonists/snake.png' },
-    ]
-    const profiles = samples.map(({ day }) => getSajuVisualProfile(calculateSaju({
-      calendar: 'solar', year: 2001, month: 1, day,
+  it('같은 명식에는 같은 포즈와 시선 방향을 고정한다', () => {
+    const input = {
+      calendar: 'solar', year: 2001, month: 1, day: 1,
       hour: 12, minute: 32, gender: 'female',
+    }
+    const first = getSajuVisualProfile(calculateSaju(input))
+    const repeated = getSajuVisualProfile(calculateSaju(input))
+    expect(repeated.characterPose).toBe(first.characterPose)
+    expect(repeated.characterFacing).toBe(first.characterFacing)
+    expect(repeated.layers.natal.at(-1)).toBe(first.layers.natal.at(-1))
+  })
+
+  it('기존 세 포즈를 버리지 않고 정면형을 더해 네 가지 자산을 모두 사용한다', () => {
+    const profiles = Array.from({ length: 60 }, (_, index) => getSajuVisualProfile(calculateSaju({
+      calendar: 'solar', year: 2001, month: 1, day: (index % 28) + 1,
+      hour: index % 24, minute: 32, gender: 'female',
     })))
-    expect(new Set(profiles.map(profile => profile.characterPose))).toEqual(new Set(['side', 'upright', 'jump']))
-    samples.forEach((sample, index) => {
-      expect(profiles[index].characterPose).toBe(sample.pose)
-      expect(profiles[index].layers.natal.at(-1)).toBe(sample.path)
-      expect(getSajuVisualProfile(calculateSaju({
-        calendar: 'solar', year: 2001, month: 1, day: sample.day,
-        hour: 12, minute: 32, gender: 'female',
-      })).characterPose).toBe(sample.pose)
-    })
+    expect(new Set(profiles.map(profile => profile.characterPose))).toEqual(new Set(['side', 'upright', 'front', 'jump']))
+    const patterns = {
+      side: /^protagonists\/[a-z]+\.png$/,
+      upright: /^protagonists\/[a-z]+-upright-three-quarter\.png$/,
+      front: /^protagonists\/[a-z]+-upright\.png$/,
+      jump: /^protagonists\/[a-z]+-jump\.png$/,
+    }
+    profiles.forEach(profile => expect(profile.layers.natal.at(-1)).toMatch(patterns[profile.characterPose]))
   })
 
   it('모든 명식에 월령 환경·일지 동물·보완 오행 레이어를 만든다', () => {
@@ -229,8 +235,9 @@ describe('해석 규칙', () => {
     expect(summerProfile.protagonist.visual).toContain('계수(水)')
     expect(summerProfile.overall).toContain('수탉은 모습')
     expect(summerProfile.overall).not.toContain('수탉는')
-    expect(summerProfile.characterPose).toBe('upright')
-    expect(summerProfile.scene).toContain('물빛 수탉이 두 발로 당당히 서 있고')
+    expect(summerProfile.characterPose).toBe('front')
+    expect(summerProfile.characterFacing).toBe('front')
+    expect(summerProfile.scene).toContain('물빛 수탉이 정면으로 당당히 서 있고')
     expect(summerProfile.environment.term).toContain('계사월')
     expect(summerProfile.neededFunction.term).toContain('금(金)')
     expect(summerProfile.support.term).toContain('목(木)')
@@ -244,8 +251,10 @@ describe('해석 규칙', () => {
     expect(winterProfile.layers.natal).toEqual([
       'environments/winter.jpg',
       'effects/earth.png',
-      'protagonists/horse-upright.png',
+      'protagonists/horse-upright-three-quarter.png',
     ])
+    expect(winterProfile.characterPose).toBe('upright')
+    expect(winterProfile.characterFacing).toBe('right')
     expect(winterProfile.protagonist.term).toContain('말')
   })
 

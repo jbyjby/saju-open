@@ -9,6 +9,8 @@ test('홈 화면은 동물과 포즈가 달라지는 귀여운 배경화면 3종
   expect(new Set(choices).size).toBe(3)
   const animals = await canvases.evaluateAll((items) => items.map((canvas) => canvas.dataset.homeAnimal))
   expect(new Set(animals).size).toBe(3)
+  const facings = await canvases.evaluateAll((items) => items.map((canvas) => canvas.dataset.homeFacing))
+  expect(new Set(facings)).toEqual(new Set(['right', 'front', 'left']))
 })
 
 test('홈 레이어를 불러오지 못해도 빈 카드 대신 대체 화면을 그린다', async ({ page }) => {

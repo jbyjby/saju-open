@@ -273,9 +273,10 @@ function withParticle(word, consonantForm, vowelForm) {
 }
 
 const CHARACTER_POSES = {
-  side: { suffix: '', phrase: '차분히 서 있는', action: '차분히 서 있고' },
-  upright: { suffix: '-upright', phrase: '두 발로 당당히 선', action: '두 발로 당당히 서 있고' },
-  jump: { suffix: '-jump', phrase: '힘차게 도약하는', action: '힘차게 도약하고' },
+  side: { suffix: '', facing: 'right', phrase: '차분히 서 있는', action: '차분히 서 있고' },
+  upright: { suffix: '-upright-three-quarter', facing: 'right', phrase: '두 발로 비스듬히 선', action: '두 발로 비스듬히 서 있고' },
+  front: { suffix: '-upright', facing: 'front', phrase: '정면으로 당당히 선', action: '정면으로 당당히 서 있고' },
+  jump: { suffix: '-jump', facing: 'left', phrase: '힘차게 도약하는', action: '힘차게 도약하고' },
 }
 
 export function selectCharacterPose(signature) {
@@ -284,7 +285,8 @@ export function selectCharacterPose(signature) {
     hash ^= character.codePointAt(0)
     hash = Math.imul(hash, 16777619)
   }
-  return Object.keys(CHARACTER_POSES)[(hash >>> 0) % 3]
+  const poses = Object.keys(CHARACTER_POSES)
+  return poses[(hash >>> 0) % poses.length]
 }
 
 export function getSajuVisualProfile(data) {
@@ -384,6 +386,7 @@ export function getSajuVisualProfile(data) {
     luckAsset: `${priority.element}.jpg`,
     characterTint: ELEMENTS[dayElement].color,
     characterPose: poseKey,
+    characterFacing: pose.facing,
     layers: {
       basePath: 'generic-layers',
       natal: [environmentLayer, ...innateEffects, protagonistLayer],

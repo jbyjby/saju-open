@@ -323,6 +323,7 @@ async function setupHomeGallery() {
     const choice = choices[index]
     canvas.dataset.homeAnimal = choice.animal
     canvas.dataset.homePose = choice.pose
+    canvas.dataset.homeFacing = choice.facing
     canvas.dataset.layerReady = 'false'
     canvas.setAttribute('aria-label', choice.alt)
     try {
