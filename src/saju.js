@@ -272,6 +272,21 @@ function withParticle(word, consonantForm, vowelForm) {
   return `${word}${hasBatchim ? consonantForm : vowelForm}`
 }
 
+const CHARACTER_POSES = {
+  side: { suffix: '', phrase: '차분히 서 있는', action: '차분히 서 있고' },
+  upright: { suffix: '-upright', phrase: '두 발로 당당히 선', action: '두 발로 당당히 서 있고' },
+  jump: { suffix: '-jump', phrase: '힘차게 도약하는', action: '힘차게 도약하고' },
+}
+
+export function selectCharacterPose(signature) {
+  let hash = 2166136261
+  for (const character of String(signature)) {
+    hash ^= character.codePointAt(0)
+    hash = Math.imul(hash, 16777619)
+  }
+  return Object.keys(CHARACTER_POSES)[(hash >>> 0) % 3]
+}
+
 export function getSajuVisualProfile(data) {
   const signature = ['year', 'month', 'day', 'time'].map(position => data.pillars?.[position]?.ganZhi).join('/')
   if (signature === '丙寅/辛丑/甲戌/癸酉') return {
@@ -349,7 +364,6 @@ export function getSajuVisualProfile(data) {
   }
   const coloredAnimal = `${ELEMENT_VISUAL_NAMES[dayElement]} ${animal.animal}`
   const environmentLayer = `environments/${environment.key}.jpg`
-  const protagonistLayer = `protagonists/${animal.key}.png`
   const innateEffects = [...new Set([yearElement, hourElement])].map(element => `effects/${element}.png`)
   const luckEffects = [...new Set([yearElement, hourElement, priority.element, support.element])]
     .map(element => `effects/${element}.png`)
@@ -359,6 +373,9 @@ export function getSajuVisualProfile(data) {
   const monthName = ganZhiKo(month)
   const yearName = ganZhiKo(year)
   const hourName = ganZhiKo(hour)
+  const poseKey = selectCharacterPose(signature)
+  const pose = CHARACTER_POSES[poseKey]
+  const protagonistLayer = `protagonists/${animal.key}${pose.suffix}.png`
 
   return {
     kind: 'generic-layered',
@@ -366,6 +383,7 @@ export function getSajuVisualProfile(data) {
     natalAsset: `${dayElement}.jpg`,
     luckAsset: `${priority.element}.jpg`,
     characterTint: ELEMENTS[dayElement].color,
+    characterPose: poseKey,
     layers: {
       basePath: 'generic-layers',
       natal: [environmentLayer, ...innateEffects, protagonistLayer],
@@ -382,11 +400,11 @@ export function getSajuVisualProfile(data) {
     natalLabel: '내 사주 원국 물상 이미지',
     luckLabel: '나만의 개운 이미지',
     luckTitle: `${priority.label}과 ${support.label}의 도움을 받는 ${coloredAnimal}`,
-    title: `${environment.label}에 선 ${coloredAnimal}`,
+    title: `${environment.label}에서 ${pose.phrase} ${coloredAnimal}`,
     tags: [`#${dayName}일주`, `#${coloredAnimal.replaceAll(' ', '')}`, `#${monthName}${environment.label.replaceAll(' ', '')}`, `#${yearName}${yearImage[0]}`, `#${priority.label.replace(/[()]/g, '')}보완`],
     readingLabel: '그림부터 읽는 총운',
     overall: `당신을 가장 가까이 보여 주는 물상은 ${dayName}일주(${coloredAnimal})입니다. ${stemTerm(day.stem)}의 ${dayImage[0]} 물상은 주인공의 색과 자세에, ${BRANCH_KO[day.branch]}의 ${withParticle(animal.animal, '은', '는')} 모습에 담았습니다. 배경은 ${monthName}월의 ${environment.label}을 나타냅니다. ${yearName}년주의 ${yearImage[0]} 물상은 장면 전체에 영향을 주는 원국의 큰 힘으로, ${hourName}시주의 ${ELEMENTS[hourElement].ko} 기운은 가까운 보조 신호로 겹쳤습니다. 개운 이미지에는 ${priority.label}을 먼저, ${support.label}을 함께 더해 지금 필요한 방향을 한눈에 떠올리도록 했습니다.`,
-    scene: `${environment.label}의 배경에서 ${withParticle(coloredAnimal, '이', '가')} 서 있고, ${priority.label}과 ${support.label}을 상징하는 빛과 자연의 흐름이 주인공에게 이어지는 장면입니다.`,
+    scene: `${environment.label}의 배경에서 ${withParticle(coloredAnimal, '이', '가')} ${pose.action}, ${priority.label}과 ${support.label}을 상징하는 빛과 자연의 흐름이 주인공에게 이어지는 장면입니다.`,
     protagonist: {
       label: '그림 속의 나',
       term: `${dayName}일주(${coloredAnimal})`,

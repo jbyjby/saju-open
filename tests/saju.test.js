@@ -177,6 +177,27 @@ describe('해석 규칙', () => {
     expect(guidance.whyNeeded).toContain('수')
   })
 
+  it('같은 명식에는 같은 포즈를 고르고 여러 명식에는 세 포즈를 모두 배분한다', () => {
+    const samples = [
+      { day: 1, pose: 'upright', path: 'protagonists/rat-upright.png' },
+      { day: 3, pose: 'jump', path: 'protagonists/tiger-jump.png' },
+      { day: 6, pose: 'side', path: 'protagonists/snake.png' },
+    ]
+    const profiles = samples.map(({ day }) => getSajuVisualProfile(calculateSaju({
+      calendar: 'solar', year: 2001, month: 1, day,
+      hour: 12, minute: 32, gender: 'female',
+    })))
+    expect(new Set(profiles.map(profile => profile.characterPose))).toEqual(new Set(['side', 'upright', 'jump']))
+    samples.forEach((sample, index) => {
+      expect(profiles[index].characterPose).toBe(sample.pose)
+      expect(profiles[index].layers.natal.at(-1)).toBe(sample.path)
+      expect(getSajuVisualProfile(calculateSaju({
+        calendar: 'solar', year: 2001, month: 1, day: sample.day,
+        hour: 12, minute: 32, gender: 'female',
+      })).characterPose).toBe(sample.pose)
+    })
+  })
+
   it('모든 명식에 월령 환경·일지 동물·보완 오행 레이어를 만든다', () => {
     const summerRooster = calculateSaju({
       calendar: 'solar', year: 1986, month: 5, day: 29,
@@ -191,7 +212,7 @@ describe('해석 규칙', () => {
         'environments/summer.jpg',
         'effects/fire.png',
         'effects/water.png',
-        'protagonists/rooster.png',
+        'protagonists/rooster-upright.png',
       ],
       luck: [
         'environments/summer.jpg',
@@ -199,7 +220,7 @@ describe('해석 규칙', () => {
         'effects/water.png',
         'effects/metal.png',
         'effects/wood.png',
-        'protagonists/rooster.png',
+        'protagonists/rooster-upright.png',
       ],
     })
     expect(summerProfile.characterTint).toBe(ELEMENTS.water.color)
@@ -208,7 +229,8 @@ describe('해석 규칙', () => {
     expect(summerProfile.protagonist.visual).toContain('계수(水)')
     expect(summerProfile.overall).toContain('수탉은 모습')
     expect(summerProfile.overall).not.toContain('수탉는')
-    expect(summerProfile.scene).toContain('물빛 수탉이 서 있고')
+    expect(summerProfile.characterPose).toBe('upright')
+    expect(summerProfile.scene).toContain('물빛 수탉이 두 발로 당당히 서 있고')
     expect(summerProfile.environment.term).toContain('계사월')
     expect(summerProfile.neededFunction.term).toContain('금(金)')
     expect(summerProfile.support.term).toContain('목(木)')
@@ -222,7 +244,7 @@ describe('해석 규칙', () => {
     expect(winterProfile.layers.natal).toEqual([
       'environments/winter.jpg',
       'effects/earth.png',
-      'protagonists/horse.png',
+      'protagonists/horse-upright.png',
     ])
     expect(winterProfile.protagonist.term).toContain('말')
   })

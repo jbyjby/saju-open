@@ -1,4 +1,5 @@
 import { calculateSaju, ELEMENTS, getLuckImageGuidance, getSajuVisualProfile } from './saju.js'
+import { pickHomeGallery } from './home-gallery.js'
 
 const form = document.querySelector('#birth-form')
 const result = document.querySelector('#result')
@@ -315,6 +316,38 @@ async function drawLayerStack(canvas, profile, variant) {
   canvas.dataset.layerReady = 'true'
 }
 
+async function setupHomeGallery() {
+  const canvases = [...document.querySelectorAll('[data-home-wallpaper]')]
+  const choices = pickHomeGallery()
+  await Promise.all(canvases.map(async (canvas, index) => {
+    const choice = choices[index]
+    canvas.dataset.homeAnimal = choice.animal
+    canvas.dataset.homePose = choice.pose
+    canvas.dataset.layerReady = 'false'
+    canvas.setAttribute('aria-label', choice.alt)
+    try {
+      await drawLayerStack(canvas, {
+        characterTint: choice.tint,
+        layers: { basePath: 'generic-layers', home: choice.layers },
+      }, 'home')
+    } catch (error) {
+      const context = canvas.getContext('2d')
+      const gradient = context.createLinearGradient(0, 0, 0, canvas.height)
+      gradient.addColorStop(0, '#dfe8ff')
+      gradient.addColorStop(1, '#f5e9df')
+      context.fillStyle = gradient
+      context.fillRect(0, 0, canvas.width, canvas.height)
+      context.fillStyle = 'rgba(255, 255, 255, 0.74)'
+      context.beginPath()
+      context.arc(canvas.width * 0.5, canvas.height * 0.42, canvas.width * 0.22, 0, Math.PI * 2)
+      context.fill()
+      canvas.setAttribute('aria-label', '행운 배경화면을 불러오지 못했습니다')
+      canvas.dataset.layerReady = 'error'
+      console.error(error)
+    }
+  }))
+}
+
 async function setupLayeredCanvases(data) {
   const profile = getSajuVisualProfile(data)
   if (!profile?.layers) return
@@ -480,6 +513,8 @@ function renderResult(data, timeUnknown) {
   setupOverallToggle()
   result.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' })
 }
+
+setupHomeGallery()
 
 form.addEventListener('submit', event => {
   event.preventDefault()

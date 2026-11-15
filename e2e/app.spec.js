@@ -1,13 +1,22 @@
 import { expect, test } from '@playwright/test'
 
-test('홈 화면은 계절과 동물을 조합한 귀여운 배경화면 3종을 보여 준다', async ({ page }) => {
+test('홈 화면은 동물과 포즈가 달라지는 귀여운 배경화면 3종을 합성한다', async ({ page }) => {
   await page.goto('/')
-  const images = page.locator('.intro-gallery img[src*="home-cute-"]')
-  await expect(images).toHaveCount(3)
-  await expect(images.nth(0)).toHaveAttribute('src', /home-cute-spring-rabbit\.jpg$/)
-  await expect(images.nth(1)).toHaveAttribute('src', /home-cute-summer-dragon\.jpg$/)
-  await expect(images.nth(2)).toHaveAttribute('src', /home-cute-winter-dog\.jpg$/)
-  await expect.poll(async () => images.evaluateAll((items) => items.every((image) => image.complete && image.naturalWidth > 0))).toBe(true)
+  const canvases = page.locator('.intro-gallery canvas[data-home-wallpaper]')
+  await expect(canvases).toHaveCount(3)
+  await expect.poll(async () => canvases.evaluateAll((items) => items.every((canvas) => canvas.dataset.layerReady === 'true'))).toBe(true)
+  const choices = await canvases.evaluateAll((items) => items.map((canvas) => `${canvas.dataset.homeAnimal}-${canvas.dataset.homePose}`))
+  expect(new Set(choices).size).toBe(3)
+  const animals = await canvases.evaluateAll((items) => items.map((canvas) => canvas.dataset.homeAnimal))
+  expect(new Set(animals).size).toBe(3)
+})
+
+test('홈 레이어를 불러오지 못해도 빈 카드 대신 대체 화면을 그린다', async ({ page }) => {
+  await page.route('**/generic-layers/protagonists/**', route => route.abort())
+  await page.goto('/')
+  const canvases = page.locator('.intro-gallery canvas[data-home-wallpaper]')
+  await expect.poll(async () => canvases.evaluateAll((items) => items.map((canvas) => canvas.dataset.layerReady))).toEqual(['error', 'error', 'error'])
+  await expect(canvases.first()).toHaveAttribute('aria-label', '행운 배경화면을 불러오지 못했습니다')
 })
 
 test('생년월일을 입력하면 사주와 근거가 표시된다', async ({ page }) => {
