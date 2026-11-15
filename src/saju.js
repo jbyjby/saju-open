@@ -134,15 +134,23 @@ function weightedElementForces(pillars) {
   return forces
 }
 
+function elementTermWithParticle(element, consonantForm, vowelForm) {
+  const elementName = ELEMENTS[element].ko
+  const particle = withParticle(elementName, consonantForm, vowelForm).slice(elementName.length)
+  return `${elementName}(${ELEMENTS[element].hanja})${particle}`
+}
+
 function strategyReason(element, context) {
-  const { dayElement, resourceElement, outputElement, wealthElement, authorityElement, weak, dominantElement } = context
-  if (weak && element === resourceElement) return `${ELEMENTS[element].ko}은 강한 기운을 받아 ${ELEMENTS[dayElement].ko} 일간으로 이어 주는 생조 통로가 됩니다.`
-  if (weak && element === dayElement) return `${ELEMENTS[element].ko}은 뿌리가 약한 일간의 힘을 직접 보태고 계절의 치우침을 완화합니다.`
-  if (weak && element === outputElement) return `${ELEMENTS[element].ko}은 ${ELEMENTS[authorityElement].ko}의 압박을 조절할 수 있지만, 약한 일간의 힘을 먼저 소모하므로 선행 보완이 필요합니다.`
-  if (element === dominantElement) return `${ELEMENTS[element].ko}은 원국에서 이미 두드러져 더 보태기보다 쓰는 방식과 강도를 조절해야 합니다.`
-  if (element === wealthElement) return `${ELEMENTS[element].ko}은 현실의 성과로 연결하지만 일간의 힘을 쓰게 하므로 양을 조절해야 합니다.`
-  if (element === authorityElement) return `${ELEMENTS[element].ko}은 책임과 기준을 세우지만 지나치면 일간을 압박할 수 있습니다.`
-  return `${ELEMENTS[element].ko}은 계절 후보와 원국의 세력을 함께 볼 때 보조적으로 활용할 수 있습니다.`
+  const { dayElement, resourceElement, outputElement, wealthElement, authorityElement, weak, dominantElement, climatePriorityElement, climate } = context
+  const subject = elementTermWithParticle(element, '은', '는')
+  if (element === climatePriorityElement) return `${subject} ${climate}에서 계절 균형을 먼저 잡는 조후 1순위 작용입니다.`
+  if (weak && element === resourceElement) return `${subject} 강한 기운을 받아 ${ELEMENTS[dayElement].ko} 일간으로 이어 주는 생조 통로가 됩니다.`
+  if (weak && element === dayElement) return `${subject} 뿌리가 약한 일간의 힘을 직접 보태고 계절의 치우침을 완화합니다.`
+  if (weak && element === outputElement) return `${subject} ${ELEMENTS[authorityElement].ko}의 압박을 조절할 수 있지만, 약한 일간의 힘을 먼저 소모하므로 선행 보완이 필요합니다.`
+  if (element === dominantElement) return `${subject} 원국에서 이미 두드러져 더 보태기보다 쓰는 방식과 강도를 조절해야 합니다.`
+  if (element === wealthElement) return `${subject} 현실의 성과로 연결하지만 일간의 힘을 쓰게 하므로 양을 조절해야 합니다.`
+  if (element === authorityElement) return `${subject} 책임과 기준을 세우지만 지나치면 일간을 압박할 수 있습니다.`
+  return `${subject} 계절 후보와 원국의 세력을 함께 볼 때 보조적으로 활용할 수 있습니다.`
 }
 
 export function getBalanceStrategy(pillars, harmony) {
@@ -171,7 +179,11 @@ export function getBalanceStrategy(pillars, harmony) {
   const weak = level === 'weak'
   const strong = level === 'strong'
   const dominantElement = ELEMENT_KEYS.reduce((best, key) => forces[key] > forces[best] ? key : best, ELEMENT_KEYS[0])
-  const seasonalOrder = new Map(harmony.candidates.map((candidate, index) => [candidate.element, Math.max(1, 3 - index)]))
+  const seasonalOrder = new Map()
+  for (const [index, candidate] of harmony.candidates.entries()) {
+    const weight = Math.max(1, 3 - index)
+    seasonalOrder.set(candidate.element, Math.max(seasonalOrder.get(candidate.element) || 0, weight))
+  }
   const drySeason = ['申', '酉', '戌'].includes(harmony.monthBranch)
   const hotSeason = ['巳', '午', '未'].includes(harmony.monthBranch)
   const coldSeason = ['亥', '子', '丑'].includes(harmony.monthBranch)
@@ -201,7 +213,12 @@ export function getBalanceStrategy(pillars, harmony) {
     return [element, score]
   }))
 
-  const context = { dayElement, resourceElement, outputElement, wealthElement, authorityElement, weak, dominantElement }
+  const climatePriority = harmony.candidates[0]
+  const context = {
+    dayElement, resourceElement, outputElement, wealthElement, authorityElement, weak, dominantElement,
+    climatePriorityElement: climatePriority.element,
+    climate: harmony.climate,
+  }
   const ranked = ELEMENT_KEYS.map(element => ({
     element,
     label: `${ELEMENTS[element].ko}(${ELEMENTS[element].hanja})`,
@@ -209,8 +226,8 @@ export function getBalanceStrategy(pillars, harmony) {
     force: Number(forces[element].toFixed(2)),
     reason: strategyReason(element, context),
   })).sort((a, b) => b.score - a.score || a.element.localeCompare(b.element))
-  const priority = ranked[0]
-  const support = ranked[1]
+  const priority = ranked.find(item => item.element === climatePriority.element) || ranked[0]
+  const support = ranked.find(item => item.element !== priority.element)
   const caution = ranked.filter(item => item.element !== priority.element && item.element !== support.element && (item.score < 0 || item.element === dominantElement))
   const cautionSet = new Set(caution.map(item => item.element))
   const conditional = ranked.filter(item => item.element !== priority.element && item.element !== support.element && !cautionSet.has(item.element))
@@ -228,8 +245,15 @@ export function getBalanceStrategy(pillars, harmony) {
     forces: Object.fromEntries(ELEMENT_KEYS.map(key => [key, Number(forces[key].toFixed(2))])),
     forceAdjustments: Object.fromEntries(ELEMENT_KEYS.map(key => [key, Number(forceAdjustments[key].toFixed(2))])),
     relationships: { stem: stemRelationships, branch: branchRelationships },
-    priority, support, conditional, caution,
-    summary: `${strengthText} 그래서 ${priority.label}을 먼저 살리고 ${support.label}을 함께 보완합니다.`,
+    priority,
+    priorityBasis: {
+      type: 'seasonal-harmony',
+      stem: climatePriority.stem,
+      order: climatePriority.order,
+      evidenceId: climatePriority.evidenceId,
+    },
+    support, conditional, caution,
+    summary: `${strengthText} 그래서 ${elementTermWithParticle(priority.element, '을', '를')} 먼저 살리고 ${elementTermWithParticle(support.element, '을', '를')} 함께 보완합니다.`,
     note: '월령 후보, 표면 천간·지지, 지장간, 뿌리와 생극 흐름을 함께 비교한 설명용 휴리스틱입니다. 충·형·해·파는 뿌리의 안정성에만 소폭 반영하고, 합은 합화로 확정하지 않습니다. 격국까지 확정한 전통 명리의 최종 용신 판정은 아닙니다.',
   }
 }
@@ -406,8 +430,8 @@ export function getSajuVisualProfile(data) {
     title: `${environment.label}에서 ${pose.phrase} ${coloredAnimal}`,
     tags: [`#${dayName}일주`, `#${coloredAnimal.replaceAll(' ', '')}`, `#${monthName}${environment.label.replaceAll(' ', '')}`, `#${yearName}${yearImage[0]}`, `#${priority.label.replace(/[()]/g, '')}보완`],
     readingLabel: '그림부터 읽는 총운',
-    overall: `당신을 가장 가까이 보여 주는 물상은 ${dayName}일주(${coloredAnimal})입니다. ${stemTerm(day.stem)}의 ${dayImage[0]} 물상은 주인공의 색과 자세에, ${BRANCH_KO[day.branch]}의 ${withParticle(animal.animal, '은', '는')} 모습에 담았습니다. 배경은 ${monthName}월의 ${environment.label}을 나타냅니다. ${yearName}년주의 ${yearImage[0]} 물상은 장면 전체에 영향을 주는 원국의 큰 힘으로, ${hourName}시주의 ${ELEMENTS[hourElement].ko} 기운은 가까운 보조 신호로 겹쳤습니다. 개운 이미지에는 ${priority.label}을 먼저, ${support.label}을 함께 더해 지금 필요한 방향을 한눈에 떠올리도록 했습니다.`,
-    scene: `${environment.label}의 배경에서 ${withParticle(coloredAnimal, '이', '가')} ${pose.action}, ${priority.label}과 ${support.label}을 상징하는 빛과 자연의 흐름이 주인공에게 이어지는 장면입니다.`,
+    overall: `당신을 가장 가까이 보여 주는 물상은 ${dayName}일주(${coloredAnimal})입니다. ${stemTerm(day.stem)}의 ${dayImage[0]} 물상은 주인공의 색과 자세에, ${BRANCH_KO[day.branch]}의 ${withParticle(animal.animal, '은', '는')} 모습에 담았습니다. 배경은 ${monthName}월의 ${environment.label}을 나타냅니다. ${yearName}년주의 ${yearImage[0]} 물상은 장면 전체에 영향을 주는 원국의 큰 힘으로, ${hourName}시주의 ${ELEMENTS[hourElement].ko} 기운은 가까운 보조 신호로 겹쳤습니다. 개운 이미지에는 ${elementTermWithParticle(priority.element, '을', '를')} 먼저, ${elementTermWithParticle(support.element, '을', '를')} 함께 더해 지금 필요한 방향을 한눈에 떠올리도록 했습니다.`,
+    scene: `${environment.label}의 배경에서 ${withParticle(coloredAnimal, '이', '가')} ${pose.action}, ${elementTermWithParticle(priority.element, '과', '와')} ${elementTermWithParticle(support.element, '을', '를')} 상징하는 빛과 자연의 흐름이 주인공에게 이어지는 장면입니다.`,
     protagonist: {
       label: '그림 속의 나',
       term: `${dayName}일주(${coloredAnimal})`,

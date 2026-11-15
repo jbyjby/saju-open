@@ -134,6 +134,35 @@ describe('해석 규칙', () => {
     expect(getSeasonalHarmony('癸', '丑').candidates.map(item => item.stem)).toEqual(['丙', '丁'])
   })
 
+  it('120개 일간·월령 조합에서 첫 조후 후보를 우선 보완으로 보존한다', () => {
+    const stems = [...'甲乙丙丁戊己庚辛壬癸']
+    const months = [...'寅卯辰巳午未申酉戌亥子丑']
+    let duplicateElementPairs = 0
+    for (const dayStem of stems) {
+      for (const monthBranch of months) {
+        const pillars = {
+          year: { stem: '丙', branch: '寅' },
+          month: { stem: '辛', branch: monthBranch },
+          day: { stem: dayStem, branch: '戌' },
+          time: { stem: '癸', branch: '酉' },
+        }
+        const harmony = getSeasonalHarmony(dayStem, monthBranch, pillars)
+        const strategy = getBalanceStrategy(pillars, harmony)
+        if (new Set(harmony.candidates.map(candidate => candidate.element)).size < harmony.candidates.length) {
+          duplicateElementPairs += 1
+        }
+        expect(strategy.priority.element, `${dayStem}/${monthBranch}`).toBe(harmony.candidates[0].element)
+        expect(strategy.priorityBasis.evidenceId, `${dayStem}/${monthBranch}`).toBe(harmony.candidates[0].evidenceId)
+        expect(strategy.support.element, `${dayStem}/${monthBranch}`).not.toBe(strategy.priority.element)
+        const remaining = [strategy.support, ...strategy.conditional, ...strategy.caution]
+          .filter(item => item.element !== strategy.priority.element)
+          .sort((a, b) => b.score - a.score || a.element.localeCompare(b.element))
+        expect(strategy.support.element, `${dayStem}/${monthBranch} support`).toBe(remaining[0].element)
+      }
+    }
+    expect(duplicateElementPairs).toBe(26)
+  })
+
   it('계절 균형 후보가 원국 천간과 지장간에 있는지 구분한다', () => {
     const harmony = getSeasonalHarmony('甲', '寅', {
       year: { stem: '丙', branch: '子' }, month: { stem: '戊', branch: '寅' },
@@ -163,7 +192,7 @@ describe('해석 규칙', () => {
     expect(result.balanceStrategy.isFinalYongShen).toBe(false)
   })
 
-  it('개운 이미지는 월령표 첫 줄이 아니라 종합 보완 전략의 우선 기운을 따른다', () => {
+  it('종합 보완 전략에서도 조후표 첫 기운을 우선 보완으로 보존한다', () => {
     const pillars = {
       year: { stem: '丙', branch: '午' }, month: { stem: '戊', branch: '戌' },
       day: { stem: '癸', branch: '未' }, time: { stem: '辛', branch: '酉' },
@@ -171,10 +200,32 @@ describe('해석 규칙', () => {
     const harmony = getSeasonalHarmony('癸', '戌', pillars)
     const strategy = getBalanceStrategy(pillars, harmony)
     const guidance = getLuckImageGuidance(harmony, strategy)
+    expect(strategy.priority.element).toBe(harmony.candidates[0].element)
     expect(guidance.neededElement).toBe('metal')
     expect(guidance.supportElement).toBe('water')
     expect(guidance.whyNeeded).toContain('금')
     expect(guidance.whyNeeded).toContain('수')
+  })
+
+  it('갑목 축월은 신약 가산점보다 정화의 계절 온기를 먼저 보완한다', () => {
+    const result = calculateSaju({
+      calendar: 'solar', year: 1987, month: 1, day: 25,
+      hour: 18, minute: 30, gender: 'male',
+    })
+    expect(result.seasonalHarmony.candidates[0]).toMatchObject({ stem: '丁', element: 'fire', order: 1 })
+    expect(result.balanceStrategy.priority.element).toBe('fire')
+    expect(result.balanceStrategy.priority.score).toBe(2.5)
+    expect(result.balanceStrategy.priority.reason).toContain('차고 습한')
+    expect(result.balanceStrategy.priority.reason).toContain('조후 1순위')
+    expect(result.balanceStrategy.priority.reason).toContain('화(火)는')
+    expect(result.balanceStrategy.support.element).toBe('water')
+    expect(result.balanceStrategy.support.reason).toContain('수(水)는')
+    expect(result.balanceStrategy.summary).toContain('화(火)를 먼저')
+    expect(result.balanceStrategy.summary).toContain('수(水)를 함께')
+    expect(result.balanceStrategy.priorityBasis).toMatchObject({
+      type: 'seasonal-harmony', stem: '丁', order: 1,
+      evidenceId: 'seasonal-harmony:甲:丑:1:丁',
+    })
   })
 
   it('같은 명식에는 같은 포즈와 시선 방향을 고정한다', () => {
@@ -256,6 +307,10 @@ describe('해석 규칙', () => {
     expect(winterProfile.characterPose).toBe('upright')
     expect(winterProfile.characterFacing).toBe('right')
     expect(winterProfile.protagonist.term).toContain('말')
+    expect(winterProfile.overall).toContain('화(火)를 먼저')
+    expect(winterProfile.overall).not.toContain('화(火)을')
+    expect(winterProfile.scene).toContain('화(火)와 목(木)을')
+    expect(winterProfile.scene).not.toContain('화(火)과')
   })
 
   it('예시 명식을 원국 물상과 필요한 작용으로 분리한다', () => {
