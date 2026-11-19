@@ -153,6 +153,33 @@ test('예시 명식은 개인 물상 이미지와 쉬운 명리 설명을 보여
   await expect(luckImage).toContainText('따뜻한 온기와 맑은 물을 받아 힘을 얻는 푸른 개')
   await expect(luckCanvas).toHaveAttribute('data-layer-count', '5')
   await expect(luckCanvas).toHaveAttribute('data-layer-ready', 'true')
+  const visualDifference = await page.evaluate(() => {
+    const natal = document.querySelector('canvas[data-layered-canvas="natal"]')
+    const luck = document.querySelector('canvas[data-layered-canvas="luck"]')
+    const width = 192
+    const height = 344
+    const sample = (source) => {
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+      const context = canvas.getContext('2d')
+      context.drawImage(source, 0, 0, width, height)
+      return context.getImageData(0, 0, width, height).data
+    }
+    const natalPixels = sample(natal)
+    const luckPixels = sample(luck)
+    let strongDifferenceCount = 0
+    for (let index = 0; index < natalPixels.length; index += 4) {
+      const meanDelta = (
+        Math.abs(natalPixels[index] - luckPixels[index])
+        + Math.abs(natalPixels[index + 1] - luckPixels[index + 1])
+        + Math.abs(natalPixels[index + 2] - luckPixels[index + 2])
+      ) / 3
+      if (meanDelta > 32) strongDifferenceCount += 1
+    }
+    return strongDifferenceCount / (natalPixels.length / 4)
+  })
+  expect(visualDifference).toBeGreaterThanOrEqual(0.08)
   await expect(luckImage.getByRole('button', { name: '휴대폰에 이미지 저장' })).toBeVisible()
   const luckIsTwelfth = await page.evaluate(() => {
     const cycles = document.querySelector('[data-testid="luck-explorer"]')
