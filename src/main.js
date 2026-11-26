@@ -1,4 +1,4 @@
-import { calculateSaju, ELEMENTS, getLuckImageGuidance, getSajuVisualProfile } from './saju.js'
+import { calculateSaju, ELEMENTS, ELEMENT_PLAIN_NAMES, getLuckImageGuidance, getSajuVisualProfile, withParticle } from './saju.js'
 import { pickHomeGallery } from './home-gallery.js'
 
 const form = document.querySelector('#birth-form')
@@ -73,21 +73,22 @@ function fortuneEvidence(evidence) {
   const items = relations.length
     ? relations.map(item => `<li><b>${item.type}</b><span>${item.members.join('·')} · ${item.labels.join(' ↔ ')}${item.result ? ` · ${item.result} 기운 가능성` : ''}</span></li>`).join('')
     : '<li><b>직접 관계</b><span>이번 운과 비교 대상 사이에 판정된 합·충·형·해·파가 없습니다.</span></li>'
-  return `<section class="fortune-evidence">
-    <div><p>판정 근거</p><h5>십이운성 ${evidence.twelveStage}</h5><span class="stage-meaning">${evidence.twelveStageMeaning}</span></div>
+  return `<details class="fortune-evidence">
+    <summary>자세한 계산 기준 보기</summary>
+    <div><p>해석에 사용한 기준</p><h5>현재 흐름 · ${evidence.twelveStage}</h5><span class="stage-meaning">${evidence.twelveStageMeaning}</span></div>
     <ul>${items}</ul>
     <p class="evidence-note">합·삼합·방합은 관계 신호만 표시합니다. 계절·세력·투간 등 합화 조건을 별도로 충족하지 않으면 특정 오행으로 변했다고 단정하지 않습니다.</p>
-  </section>`
+  </details>`
 }
 
 function natalEvidence(evidence) {
   const relations = [...evidence.stemRelations, ...evidence.branchRelations]
   const items = relations.length
     ? relations.map(item => `<li><b>${item.type}</b><span>${item.members.join('·')} · ${item.labels.join(' ↔ ')}${item.result ? ` · ${item.result} 기운 가능성` : ''}</span></li>`).join('')
-    : '<li><b>직접 관계</b><span>원국 네 기둥 사이에 판정된 합·충·형·해·파가 없습니다.</span></li>'
+    : '<li><b>직접 관계</b><span>내 사주의 네 글자 기둥 사이에 바로 맞물리는 관계가 없습니다.</span></li>'
   return `<details class="natal-evidence" data-testid="natal-evidence">
-    <summary><span>원국 관계 근거</span><small>합·충·형·해·파 판정 보기</small></summary>
-    <div class="natal-evidence-body"><ul>${items}</ul><p>여러 관계가 함께 성립할 수 있으며, 합은 합화 확정으로 보지 않습니다. 위치와 계절, 세력 조건을 함께 살펴야 합니다.</p></div>
+    <summary><span>내 사주의 글자 관계</span><small>서로 돕거나 부딪히는 관계 보기</small></summary>
+    <div class="natal-evidence-body"><ul>${items}</ul><p>글자 사이의 관계는 하나만 따로 보지 않고, 태어난 계절과 각 글자의 위치를 함께 살펴 해석합니다.</p></div>
   </details>`
 }
 
@@ -100,7 +101,7 @@ function renderAnnualDetail(explorer, annual) {
   explorer.querySelector('[data-testid="annual-detail"]').innerHTML = `
     <div class="annual-head"><p>${annual.age}세 · ${annual.ganZhi} 세운</p><h4>${annual.reading.title}</h4></div>
     <p class="annual-summary">${annual.reading.summary}</p>
-    <div class="fortune-signals">${annual.reading.signals.map(signal => `<span>${signal}</span>`).join('')}</div>
+    <details class="advanced-signals"><summary>사주 용어로 자세히 보기</summary><div class="fortune-signals">${annual.reading.signals.map(signal => `<span>${signal}</span>`).join('')}</div></details>
     ${fortuneEvidence(annual.reading.evidence)}
     <div class="fortune-areas annual-areas">${fortuneAreaCards(annual.reading.areas)}</div>`
 }
@@ -117,7 +118,7 @@ function renderCycleDetail(explorer, data, cycleIndex) {
     <article class="cycle-detail" data-testid="cycle-detail">
       <header><p>${cycle.startAge}–${cycle.endAge}세 · ${cycle.startYear}–${cycle.endYear}</p><h3>${cycle.ganZhi} 대운 · ${cycle.reading.title}</h3></header>
       <p class="cycle-body">${cycle.reading.body}</p>
-      <div class="fortune-signals">${cycle.reading.signals.map(signal => `<span>${signal}</span>`).join('')}</div>
+      <details class="advanced-signals"><summary>사주 용어로 자세히 보기</summary><div class="fortune-signals">${cycle.reading.signals.map(signal => `<span>${signal}</span>`).join('')}</div></details>
       ${fortuneEvidence(cycle.reading.evidence)}
       <div class="fortune-areas">${fortuneAreaCards(cycle.reading.areas)}</div>
       <div class="annual-section">
@@ -153,10 +154,13 @@ function setupLuckExplorer(data) {
 
 function strategyItem(item, role, description) {
   if (!item) return ''
+  const reason = role === 'priority'
+    ? `지금은 ${withParticle(ELEMENT_PLAIN_NAMES[item.element], '이', '가')} 가장 먼저 필요합니다. 생활 속에서 이 힘을 자주 쓸수록 마음과 행동이 한결 편안해집니다.`
+    : `${withParticle(ELEMENT_PLAIN_NAMES[item.element], '은', '는')} 먼저 필요한 힘이 오래가도록 옆에서 받쳐 줍니다.`
   return `<article class="strategy-item strategy-${role}">
     <span>${description}</span>
-    <h3 class="element-${item.element}">${item.label}</h3>
-    <p>${item.reason}</p>
+    <h3 class="element-${item.element}">${ELEMENT_PLAIN_NAMES[item.element]}</h3>
+    <p>${reason}</p>
   </article>`
 }
 
@@ -177,7 +181,7 @@ function imagePresentation(data) {
 
 function layeredCanvas(profile, variant, fallbackUrl, alt) {
   const count = profile.layers[variant].length
-  return `<canvas class="layered-wallpaper" width="1536" height="2752" role="img" aria-label="${alt}" data-layered-canvas="${variant}" data-layer-count="${count}" data-layer-ready="false"></canvas>
+  return `<canvas class="layered-wallpaper" width="768" height="1376" role="img" aria-label="${alt}" data-layered-canvas="${variant}" data-layer-count="${count}" data-layer-ready="false"></canvas>
     <img class="layered-fallback" src="${fallbackUrl}" alt="${alt}" hidden />`
 }
 
@@ -185,7 +189,7 @@ function luckHeroView(data, overall) {
   const strategy = data.balanceStrategy
   const { profile, guidance, imageUrl } = imagePresentation(data)
   const imageAlt = profile
-    ? `원국 물상 이미지 — ${profile.title}`
+    ? `나의 사주를 풀어낸 그림 — ${profile.title}`
     : `계절 균형 이미지 — ${strategy.priority.label}을 중심으로 ${strategy.support.label}을 함께 담은 휴대폰 배경`
   const visual = profile?.layers
     ? layeredCanvas(profile, 'natal', imageUrl, imageAlt)
@@ -194,21 +198,18 @@ function luckHeroView(data, overall) {
   return `<section class="luck-hero" data-testid="luck-hero" aria-labelledby="luck-hero-title">
     <figure class="luck-visual">
       ${visual}
-      <div class="image-badge"><span>${profile?.layers ? '검수된 레이어 합성 원국' : '검수된 기본형 배경화면'}</span><b>${profile?.layers ? profile.layerFormula.filter((_, index) => index === 0 || index === profile.layerFormula.length - 1).join(' + ') : `${strategy.priority.label} × ${strategy.support.label}`}</b></div>
     </figure>
     <div class="luck-hero-copy" data-testid="overall-reading">
       <p class="product-kicker">${profile?.layers ? `01 · ${profile.natalLabel}` : '총운에서 고른 개운 이미지'}</p>
       <h2 id="luck-hero-title">${profile?.title || overall.title}</h2>
       ${profile?.layers ? `<div class="visual-tags" aria-label="핵심 해시태그">${profile.tags.map(tag => `<span>${tag}</span>`).join('')}</div>` : ''}
       <p class="hero-overall is-collapsed"><b>${profile?.readingLabel || '먼저 읽는 총운'}</b><span>${profile?.overall || overall.body}</span></p>
-      <button class="overall-toggle" type="button" aria-expanded="false">총운 전체 읽기</button>
+      <button class="overall-toggle" type="button" aria-expanded="false">그림 설명 더 보기</button>
       <div class="strategy-chips" aria-label="보완 전략">
-        <span><small>우선 보완</small>${strategy.priority.label}</span>
-        <span><small>함께 보완</small>${strategy.support.label}</span>
+        <span><small>먼저 필요한 힘</small>${ELEMENT_PLAIN_NAMES[strategy.priority.element]}</span>
+        <span><small>함께 필요한 힘</small>${ELEMENT_PLAIN_NAMES[strategy.support.element]}</span>
       </div>
-      <div class="hero-reason"><h3>왜 이 장면인가요?</h3><p>${profile?.scene || guidance.whyNeeded}</p></div>
       ${saveButton}
-      <p class="image-disclaimer">이미지는 필요한 태도를 떠올리는 배경화면입니다. 저장만으로 운의 변화나 특정 결과를 보장하지 않습니다.</p>
     </div>
   </section>`
 }
@@ -219,38 +220,49 @@ function visualStoryView(data) {
   const symbols = [profile.protagonist, profile.environment, profile.existingStrength, profile.neededFunction, profile.support]
   return `<section class="visual-story" data-testid="visual-story" aria-labelledby="visual-story-title">
     <header>
-      <p>이미지 속 물상을 하나씩 풀어봅니다</p>
-      <h2 id="visual-story-title">그림으로 읽는 내 사주</h2>
-      <span>전문 용어는 처음 나올 때 쉬운 물상을 괄호 안에 함께 적었습니다.</span>
+      <p>그림 속 다섯 장면을 살펴보세요</p>
+      <h2 id="visual-story-title">그림으로 읽는 나의 사주</h2>
+      <span>큰 그림을 나누어 보면 내가 가진 힘과 지금 필요한 힘이 더 분명하게 보입니다.</span>
     </header>
     <div class="visual-story-grid">
-      ${symbols.map((symbol, index) => `<article><span>0${index + 1} · ${symbol.label}</span><h3>${symbol.term}</h3><p>${symbol.visual}</p></article>`).join('')}
+      ${symbols.map((symbol, index) => `<article class="visual-story-card visual-story-${symbol.focus}">
+        <figure>
+          <canvas width="512" height="414" role="img" aria-label="${symbol.alt}" data-story-layer="${index}" data-layer-ready="false"></canvas>
+        </figure>
+        <div class="visual-story-copy">
+          <span>0${index + 1} · ${symbol.label}</span>
+          <h3>${symbol.title}</h3>
+          <p>${symbol.body}</p>
+          <p class="visual-cue">그림에서는 ${symbol.visualCue}</p>
+
+        </div>
+      </article>`).join('')}
     </div>
-    <div class="visual-flow"><span>그림 속 생조 흐름</span><b>${profile.flow}</b><p>${profile.disclaimer}</p></div>
+    <div class="visual-flow"><span>그림 속 힘이 이어지는 순서</span><b>${profile.flow}</b></div>
   </section>`
 }
 
 function seasonalHarmonyView(harmony, strategy) {
   const guidance = getLuckImageGuidance(harmony, strategy)
-  const conditional = strategy.conditional.map(item => `<li><b class="element-${item.element}">${item.label}</b><span>${item.reason}</span></li>`).join('')
-  const caution = strategy.caution.map(item => `<li><b class="element-${item.element}">${item.label}</b><span>${item.reason}</span></li>`).join('')
+  const conditional = strategy.conditional.map(item => `<li><b class="element-${item.element}">${ELEMENT_PLAIN_NAMES[item.element]}</b><span>필요한 순간에 이 힘도 함께 꺼내 쓰면 좋습니다.</span></li>`).join('')
+  const caution = strategy.caution.map(item => `<li><b class="element-${item.element}">${ELEMENT_PLAIN_NAMES[item.element]}</b><span>이미 충분한 힘입니다. 더 늘리기보다 쓰는 양과 속도를 조절하세요.</span></li>`).join('')
   return `<section class="seasonal-harmony" data-testid="seasonal-harmony" aria-labelledby="seasonal-harmony-title">
     <header class="strategy-head">
-      <p>월령표를 명식 전체로 다시 검토했습니다</p>
-      <h2 id="seasonal-harmony-title">이 사주에 이 이미지가 필요한 이유</h2>
-      <span>${strategy.summary}</span>
+      <p>지금의 나에게 필요한 균형</p>
+      <h2 id="seasonal-harmony-title">먼저 채울 힘과 함께 챙길 힘</h2>
+      <span>한꺼번에 모든 것을 바꾸지 않아도 됩니다. 먼저 필요한 힘부터 챙기고, 그다음 힘을 곁에 더하면 됩니다.</span>
     </header>
     <div class="strategy-grid">
-      ${strategyItem(strategy.priority, 'priority', '우선 보완')}
-      ${strategyItem(strategy.support, 'support', '함께 보완')}
+      ${strategyItem(strategy.priority, 'priority', '먼저 필요한 힘')}
+      ${strategyItem(strategy.support, 'support', '함께 필요한 힘')}
     </div>
     <div class="strategy-secondary">
-      <section><p>조건부 활용</p><ul>${conditional || '<li><span>별도로 앞세울 조건부 기운이 없습니다.</span></li>'}</ul></section>
-      <section><p>과용 주의</p><ul>${caution || '<li><span>현재 규칙에서 특별히 과용을 경계할 기운이 없습니다.</span></li>'}</ul></section>
+      <section><p>필요할 때 꺼내 쓸 힘</p><ul>${conditional || '<li><span>지금은 따로 더 챙길 힘이 없습니다.</span></li>'}</ul></section>
+      <section><p>이미 충분한 힘</p><ul>${caution || '<li><span>지금은 특별히 줄여야 할 힘이 없습니다.</span></li>'}</ul></section>
     </div>
     <div class="practice-panel">
-      <div><p>이미지를 생활에서 쓰는 법</p><h3>화면을 볼 때마다 이 세 가지를 떠올리세요</h3><span>${guidance.definition}</span></div>
-      <div><ol>${guidance.practice.map((item, index) => `<li><span>0${index + 1}</span>${item}</li>`).join('')}</ol><p class="save-reason">${guidance.saveReason}</p></div>
+      <div><p>오늘부터 해볼 일</p><h3>작은 행동 세 가지</h3></div>
+      <div><ol>${guidance.practice.map((item, index) => `<li><span>0${index + 1}</span>${item}</li>`).join('')}</ol></div>
     </div>
   </section>`
 }
@@ -263,14 +275,13 @@ function finalLuckImageView(data) {
     <div class="final-luck-copy">
       <p class="product-kicker">12 · ${profile.luckLabel}</p>
       <h2 id="final-luck-title">${profile.luckTitle}</h2>
-      <p>${profile.disclaimer}</p>
-      <div class="layer-formula" aria-label="개운 이미지 레이어 구성">${profile.layerFormula.map((item, index) => `${index ? '<i>+</i>' : ''}<span>${item}</span>`).join('')}</div>
+      <p>${profile.scene}</p>
       <button class="save-wallpaper" type="button" data-download-wallpaper disabled><span>휴대폰에 이미지 저장</span><b aria-hidden="true">↓</b></button>
-      <p class="image-disclaimer">이 이미지는 행운을 보장하는 부적이 아니라, 필요한 방향을 떠올리게 하는 상징적 배경화면입니다.</p>
+
     </div>
     <figure class="luck-visual final-luck-visual">
       ${layeredCanvas(profile, 'luck', luckImageUrl, imageAlt)}
-      <div class="image-badge"><span>검수된 레이어 합성 개운본</span><b>같은 주인공의 변화 이후 장면</b></div>
+
     </figure>
   </section>`
 }
@@ -279,26 +290,48 @@ function layerUrl(profile, file) {
   return `${import.meta.env.BASE_URL}luck-images/${profile.layers.basePath}/${file}`
 }
 
+const layerImageCache = new Map()
+const MAX_LAYER_IMAGE_CACHE = 24
+
 function loadLayer(url) {
-  return new Promise((resolve, reject) => {
+  if (layerImageCache.has(url)) {
+    const cached = layerImageCache.get(url)
+    layerImageCache.delete(url)
+    layerImageCache.set(url, cached)
+    return cached
+  }
+  const request = new Promise((resolve, reject) => {
     const image = new Image()
     image.onload = () => resolve(image)
-    image.onerror = () => reject(new Error(`레이어를 불러오지 못했습니다: ${url}`))
+    image.onerror = () => {
+      if (layerImageCache.get(url) === request) layerImageCache.delete(url)
+      reject(new Error(`레이어를 불러오지 못했습니다: ${url}`))
+    }
     image.src = url
   })
+  layerImageCache.set(url, request)
+  while (layerImageCache.size > MAX_LAYER_IMAGE_CACHE) {
+    layerImageCache.delete(layerImageCache.keys().next().value)
+  }
+  return request
 }
 
 function drawTintedLayer(context, image, canvas, tint) {
   const scratch = document.createElement('canvas')
   scratch.width = canvas.width
   scratch.height = canvas.height
-  const scratchContext = scratch.getContext('2d')
-  scratchContext.drawImage(image, 0, 0, canvas.width, canvas.height)
-  scratchContext.globalCompositeOperation = 'source-atop'
-  scratchContext.globalAlpha = 0.48
-  scratchContext.fillStyle = tint
-  scratchContext.fillRect(0, 0, canvas.width, canvas.height)
-  context.drawImage(scratch, 0, 0)
+  try {
+    const scratchContext = scratch.getContext('2d')
+    scratchContext.drawImage(image, 0, 0, canvas.width, canvas.height)
+    scratchContext.globalCompositeOperation = 'source-atop'
+    scratchContext.globalAlpha = 0.48
+    scratchContext.fillStyle = tint
+    scratchContext.fillRect(0, 0, canvas.width, canvas.height)
+    context.drawImage(scratch, 0, 0)
+  } finally {
+    scratch.width = 0
+    scratch.height = 0
+  }
 }
 
 async function drawLayerStack(canvas, profile, variant) {
@@ -314,6 +347,79 @@ async function drawLayerStack(canvas, profile, variant) {
     }
   })
   canvas.dataset.layerReady = 'true'
+}
+
+const STORY_CROPS = {
+  protagonist: { x: 0.08, y: 0.19, width: 0.84, height: 0.52 },
+  environment: { x: 0, y: 0.08, width: 1, height: 0.62 },
+  sun: { x: 0, y: 0, width: 1, height: 0.5 },
+  existing: { x: 0, y: 0.08, width: 1, height: 0.62 },
+  water: { x: 0, y: 0.43, width: 1, height: 0.42 },
+  warmth: { x: 0, y: 0.36, width: 1, height: 0.48 },
+  priority: { x: 0, y: 0.22, width: 1, height: 0.58 },
+  support: { x: 0, y: 0.22, width: 1, height: 0.58 },
+}
+
+async function drawStoryLayer(canvas, profile, symbol) {
+  const files = symbol.previewLayers
+  const images = await Promise.all(files.map(file => loadLayer(layerUrl(profile, file))))
+  const crop = STORY_CROPS[symbol.focus] || STORY_CROPS.environment
+  const context = canvas.getContext('2d')
+  context.clearRect(0, 0, canvas.width, canvas.height)
+  images.forEach((image, index) => {
+    let sourceX = image.naturalWidth * crop.x
+    let sourceY = image.naturalHeight * crop.y
+    let sourceWidth = image.naturalWidth * crop.width
+    let sourceHeight = image.naturalHeight * crop.height
+    const sourceAspect = sourceWidth / sourceHeight
+    const targetAspect = canvas.width / canvas.height
+    if (sourceAspect > targetAspect) {
+      const coveredWidth = sourceHeight * targetAspect
+      sourceX += (sourceWidth - coveredWidth) / 2
+      sourceWidth = coveredWidth
+    } else if (sourceAspect < targetAspect) {
+      const coveredHeight = sourceWidth / targetAspect
+      sourceY += (sourceHeight - coveredHeight) / 2
+      sourceHeight = coveredHeight
+    }
+    if (profile.characterTint && files[index].startsWith('protagonists/')) {
+      const scratch = document.createElement('canvas')
+      scratch.width = canvas.width
+      scratch.height = canvas.height
+      try {
+        const scratchContext = scratch.getContext('2d')
+        scratchContext.drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, canvas.width, canvas.height)
+        scratchContext.globalCompositeOperation = 'source-atop'
+        scratchContext.globalAlpha = 0.48
+        scratchContext.fillStyle = profile.characterTint
+        scratchContext.fillRect(0, 0, canvas.width, canvas.height)
+        context.drawImage(scratch, 0, 0)
+      } finally {
+        scratch.width = 0
+        scratch.height = 0
+      }
+    } else {
+      context.drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, canvas.width, canvas.height)
+    }
+  })
+  canvas.dataset.layerReady = 'true'
+}
+
+async function setupStoryCanvases(data) {
+  const profile = getSajuVisualProfile(data)
+  if (!profile?.layers) return
+  const symbols = [profile.protagonist, profile.environment, profile.existingStrength, profile.neededFunction, profile.support]
+  const canvases = [...result.querySelectorAll('[data-story-layer]')]
+  for (const canvas of canvases) {
+    const symbol = symbols[Number(canvas.dataset.storyLayer)]
+    try {
+      await drawStoryLayer(canvas, profile, symbol)
+    } catch (error) {
+      canvas.dataset.layerReady = 'error'
+      canvas.setAttribute('aria-label', `${symbol.alt} 이미지를 불러오지 못했습니다`)
+      console.error(error)
+    }
+  }
 }
 
 async function setupHomeGallery() {
@@ -391,6 +497,19 @@ async function downloadCanvas(canvas, harmony) {
   window.setTimeout(() => URL.revokeObjectURL(targetUrl), 1000)
 }
 
+async function downloadLayerStack(profile, variant, harmony) {
+  const canvas = document.createElement('canvas')
+  canvas.width = 1536
+  canvas.height = 2752
+  try {
+    await drawLayerStack(canvas, profile, variant)
+    await downloadCanvas(canvas, harmony)
+  } finally {
+    canvas.width = 0
+    canvas.height = 0
+  }
+}
+
 function setupWallpaper(data) {
   const button = result.querySelector('[data-download-wallpaper]')
   if (!button) return
@@ -399,9 +518,8 @@ function setupWallpaper(data) {
     button.disabled = true
     button.textContent = '저장하는 중…'
     try {
-      const canvas = result.querySelector('canvas[data-layered-canvas="luck"]')
-      if (profile?.layers && canvas?.dataset.layerReady === 'true') {
-        await downloadCanvas(canvas, data.seasonalHarmony)
+      if (profile?.layers) {
+        await downloadLayerStack(profile, 'luck', data.seasonalHarmony)
       } else {
         await downloadWallpaper(profile ? luckImageUrl : imageUrl, data.seasonalHarmony)
       }
@@ -424,7 +542,7 @@ function setupOverallToggle() {
   button.addEventListener('click', () => {
     const expanded = button.getAttribute('aria-expanded') === 'true'
     button.setAttribute('aria-expanded', String(!expanded))
-    button.textContent = expanded ? '총운 전체 읽기' : '총운 접기'
+    button.textContent = expanded ? '그림 설명 더 보기' : '그림 설명 접기'
     copy.classList.toggle('is-collapsed', expanded)
   })
 }
@@ -511,6 +629,7 @@ function renderResult(data, timeUnknown) {
   setupLuckExplorer(data)
   setupWallpaper(data)
   setupLayeredCanvases(data)
+  setupStoryCanvases(data)
   setupOverallToggle()
   result.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' })
 }

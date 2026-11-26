@@ -278,6 +278,14 @@ const ELEMENT_VISUAL_NAMES = {
   wood: '푸른', fire: '붉은', earth: '황금빛', metal: '은빛', water: '물빛',
 }
 
+export const ELEMENT_PLAIN_NAMES = {
+  wood: '힘차게 자라는 나무',
+  fire: '따뜻하게 데우는 불',
+  earth: '단단하게 받쳐 주는 땅',
+  metal: '분명하게 정리하는 금속',
+  water: '차분하게 흐르는 물',
+}
+
 const STEM_KO = { 甲: '갑', 乙: '을', 丙: '병', 丁: '정', 戊: '무', 己: '기', 庚: '경', 辛: '신', 壬: '임', 癸: '계' }
 const BRANCH_KO = { 子: '자', 丑: '축', 寅: '인', 卯: '묘', 辰: '진', 巳: '사', 午: '오', 未: '미', 申: '신', 酉: '유', 戌: '술', 亥: '해' }
 
@@ -290,17 +298,17 @@ function stemTerm(stem) {
   return `${STEM_KO[stem]}${element.ko}(${element.hanja})`
 }
 
-function withParticle(word, consonantForm, vowelForm) {
+export function withParticle(word, consonantForm, vowelForm) {
   const last = word.charCodeAt(word.length - 1)
   const hasBatchim = last >= 0xac00 && last <= 0xd7a3 && (last - 0xac00) % 28 !== 0
   return `${word}${hasBatchim ? consonantForm : vowelForm}`
 }
 
 const CHARACTER_POSES = {
-  side: { suffix: '', facing: 'right', phrase: '차분히 서 있는', action: '차분히 서 있고' },
-  upright: { suffix: '-upright-three-quarter', facing: 'right', phrase: '두 발로 비스듬히 선', action: '두 발로 비스듬히 서 있고' },
-  front: { suffix: '-upright', facing: 'front', phrase: '정면으로 당당히 선', action: '정면으로 당당히 서 있고' },
-  jump: { suffix: '-jump', facing: 'left', phrase: '힘차게 도약하는', action: '힘차게 도약하고' },
+  side: { suffix: '', facing: 'right', phrase: '차분히 서 있는' },
+  upright: { suffix: '-upright-three-quarter', facing: 'right', phrase: '두 발로 비스듬히 선' },
+  front: { suffix: '-upright', facing: 'front', phrase: '정면으로 당당히 선' },
+  jump: { suffix: '-jump', facing: 'left', phrase: '힘차게 도약하는' },
 }
 
 export function selectCharacterPose(signature) {
@@ -336,42 +344,76 @@ export function getSajuVisualProfile(data) {
         'layer-05-blue-dog-luck.png',
       ],
     },
-    layerFormula: ['신축월 겨울 환경', '병인 태양', '계유 물', '정화 온기', '물을 받는 갑술 주인공'],
-    natalLabel: '내 사주 원국 물상 이미지',
+
+    natalLabel: '그림으로 만나는 나의 사주',
     luckLabel: '나만의 개운 이미지',
     luckTitle: '따뜻한 온기와 맑은 물을 받아 힘을 얻는 푸른 개',
     title: '차가운 늦겨울, 따뜻한 빛과 맑은 물을 받는 푸른 개',
-    tags: ['#큰나무의기상', '#갑술푸른개', '#신축늦겨울', '#병화태양', '#계수맑은물'],
-    readingLabel: '그림부터 읽는 총운',
-    overall: '당신을 가장 가까이 보여 주는 물상은 갑술일주(푸른 개)입니다. 갑목(곧게 자라는 큰 나무)의 푸른빛과 곧게 자라는 기상은 강아지의 색과 꼿꼿한 자세에 담겼고, 술토(불씨를 품은 늦가을의 마른 땅)는 개의 모습과 발밑 땅으로 나타냈습니다. 이 푸른 개가 서 있는 눈밭은 신축월(차갑고 습한 늦겨울), 큰 붉은 태양은 이미 가진 병화(태양), 얼지 않은 맑은 물은 계수(이슬과 맑은 물)를 뜻합니다. 태양의 빛이 정화(가까이 머무는 온기)처럼 땅과 물 가까이에 머물 때, 푸른 개가 맑은 물을 마시며 힘을 얻는 흐름을 보여 줍니다.',
-    scene: '눈 내리는 차가운 겨울에서 뿌리 있는 태양의 온기가 땅과 물 가까이에 머물고, 푸른 개가 맑은 물을 마시며 힘을 얻는 장면입니다.',
+    tags: ['#큰나무처럼곧게', '#차가운늦겨울', '#겨울태양', '#맑은물', '#가까운온기'],
+    readingLabel: '그림으로 읽는 나의 사주',
+    overall: '당신은 차가운 겨울 땅에 서 있는 푸른 개입니다. 이 푸른 개는 큰 나무처럼 곧게 자라고, 한번 정한 방향을 쉽게 놓지 않는 당신을 보여 줍니다. 눈 덮인 땅은 시작하기 전에 몸과 마음을 충분히 데워야 하는 환경입니다. 뒤의 큰 태양은 이미 가진 밝은 추진력이고, 얼지 않은 맑은 물은 생각과 감각을 다시 살리는 힘입니다. 따뜻한 빛이 가까이 오래 머물 때, 당신은 물을 마신 푸른 개처럼 다시 힘을 내서 움직일 수 있습니다.',
+    scene: '차가운 환경에서도 이미 가진 밝은 힘을 잘 쓰고, 가까운 온기와 맑은 물을 충분히 받아야 편안하게 성장하는 사람입니다.',
     protagonist: {
       label: '그림 속의 나',
       term: '갑술일주(푸른 개)',
       visual: '갑목(곧게 자라는 큰 나무)의 푸른빛과 곧은 기상은 색과 꼿꼿한 자세에, 술토의 개는 주인공의 모습에 담았습니다.',
+      title: '큰 나무처럼 곧게 선 푸른 개',
+      body: '이 푸른 개가 바로 당신입니다. 주변이 차갑고 움직이기 어려워도 자기 자리를 지키고, 방향을 정하면 꾸준히 나아가는 힘이 있습니다.',
+      visualCue: '푸른빛은 큰 나무의 생명력을, 꼿꼿한 자세는 쉽게 꺾이지 않는 태도를 보여 줍니다.',
+      technicalTerm: '갑술일주',
+      previewLayers: ['layer-01-environment-base.jpg', 'layer-04-blue-dog-base.png'],
+      focus: 'protagonist',
+      alt: '눈 덮인 겨울 땅에 꼿꼿하게 서 있는 푸른 개',
     },
     environment: {
       label: '내가 놓인 계절',
       term: '신축월(차갑고 습한 늦겨울)',
       visual: '눈밭과 굳은 겨울 땅은 실제 출생일의 날씨가 아니라 축월의 계절성을 나타냅니다.',
+      title: '차갑고 습한 늦겨울 땅',
+      body: '당신은 따뜻한 봄이 아니라 아직 땅이 굳어 있는 늦겨울의 환경에서 출발합니다. 무조건 서두르기보다 준비할 시간을 충분히 가질 때 제 힘이 나옵니다.',
+      visualCue: '눈밭과 단단한 땅은 약하다는 뜻이 아닙니다. 몸과 마음이 풀린 뒤에 움직여야 오래 간다는 뜻입니다.',
+      technicalTerm: '신축월',
+      previewLayers: ['layer-01-environment-base.jpg'],
+      focus: 'environment',
+      alt: '눈이 쌓이고 땅이 단단하게 굳은 늦겨울 들판',
     },
     existingStrength: {
       label: '이미 가진 힘',
       term: '병화(태양)',
       visual: '병인년주의 태양은 인목에 뿌리를 두어 겨울에도 힘 있게 빛나는 원국의 자원입니다.',
+      title: '겨울에도 크게 빛나는 태양',
+      body: '차가운 환경 속에서도 당신에게는 분위기를 밝히고 다시 시작하게 만드는 힘이 이미 있습니다. 힘든 때에도 해야 할 일을 찾아 움직이는 편입니다.',
+      visualCue: '작은 불꽃이 아니라 큰 태양으로 그린 이유는, 이 밝은 힘이 밖에서 빌려 오는 것이 아니라 원래부터 당신 안에 있기 때문입니다.',
+      technicalTerm: '병화',
+      previewLayers: ['layer-01-environment-base.jpg', 'layer-02-rooted-sun.png'],
+      focus: 'sun',
+      alt: '차가운 겨울 들판 뒤에서 크고 붉게 빛나는 태양',
     },
     neededFunction: {
-      label: '더 필요한 작용',
+      label: '지금 더 필요한 힘',
       term: '정화(가까이 머무는 온기)',
       visual: '불꽃을 하나 더 그리지 않고, 따뜻한 빛이 강아지와 땅과 물 가까이에 지속되는 모습으로 표현했습니다.',
+      title: '멀리 비추는 빛보다 가까이 머무는 온기',
+      body: '지금 더 필요한 것은 강한 자극이 아니라 몸과 마음을 천천히 녹여 주는 꾸준한 온기입니다. 한 번에 몰아붙이기보다 편안한 리듬을 오래 유지하는 쪽이 잘 맞습니다.',
+      visualCue: '별도의 불꽃을 더하지 않고, 땅과 물 가까이에 오래 남는 주황빛으로 표현했습니다.',
+      technicalTerm: '정화',
+      previewLayers: ['layer-01-environment-base.jpg', 'layer-02-rooted-sun.png', 'layer-06-nearby-warmth.png'],
+      focus: 'warmth',
+      alt: '겨울 땅과 물 가까이에 부드럽게 머무는 따뜻한 주황빛',
     },
     support: {
       label: '나를 살리는 물',
       term: '계수(이슬과 맑은 물)',
       visual: '차갑게 얼어붙는 물이 아니라 태양의 온기 아래 갑목을 길러 주는 물로 표현했습니다.',
+      title: '얼지 않고 흐르는 맑은 물',
+      body: '당신은 생각과 감정을 충분히 받아들일 때 다시 자랄 힘을 얻습니다. 혼자 버티기보다 필요한 정보와 도움을 제때 받아들이는 것이 중요합니다.',
+      visualCue: '물이 얼어붙지 않고 푸른 개 가까이 이어지는 모습은, 필요한 것이 실제 행동까지 연결되는 장면입니다.',
+      technicalTerm: '계수',
+      previewLayers: ['layer-01-environment-base.jpg', 'layer-02-rooted-sun.png', 'layer-03-clear-water.png'],
+      focus: 'water',
+      alt: '태양빛 아래 얼지 않고 푸른 개 가까이 흐르는 맑은 물',
     },
-    flow: '유금 → 계수 → 갑목으로 이어지는 가능성을 강아지가 맑은 물을 마시는 행동으로 보여 줍니다.',
-    disclaimer: '원국에 이미 있는 힘과 더 필요한 작용을 구분해 만든 검수 시안입니다.',
+    flow: '큰 태양이 추위를 덜어 주고, 맑은 물이 푸른 개에게 닿습니다. 당신도 충분히 따뜻해지고 필요한 도움을 받아들일 때 가장 힘 있게 움직입니다.',
   }
 
   const day = data.pillars?.day
@@ -395,6 +437,7 @@ export function getSajuVisualProfile(data) {
     .map(element => `effects/${element}.png`)
   const dayImage = DAY_MASTER[day.stem]
   const yearImage = DAY_MASTER[year.stem]
+  const hourImage = DAY_MASTER[hour.stem]
   const dayName = ganZhiKo(day)
   const monthName = ganZhiKo(month)
   const yearName = ganZhiKo(year)
@@ -416,49 +459,76 @@ export function getSajuVisualProfile(data) {
       natal: [environmentLayer, ...innateEffects, protagonistLayer],
       luck: [environmentLayer, ...luckEffects, protagonistLayer],
     },
-    layerFormula: [
-      `${monthName}월 ${environment.label}`,
-      `${yearName}년 ${ELEMENTS[yearElement].ko}의 큰 힘`,
-      `${hourName}시 ${ELEMENTS[hourElement].ko}의 보조 신호`,
-      priority.label,
-      support.label,
-      `${dayName}일주 ${coloredAnimal}`,
-    ],
-    natalLabel: '내 사주 원국 물상 이미지',
+
+    natalLabel: '그림으로 만나는 나의 사주',
     luckLabel: '나만의 개운 이미지',
-    luckTitle: `${priority.label}과 ${support.label}의 도움을 받는 ${coloredAnimal}`,
+    luckTitle: `${withParticle(ELEMENT_PLAIN_NAMES[priority.element], '과', '와')} ${ELEMENT_PLAIN_NAMES[support.element]}의 도움을 받는 ${coloredAnimal}`,
     title: `${environment.label}에서 ${pose.phrase} ${coloredAnimal}`,
-    tags: [`#${dayName}일주`, `#${coloredAnimal.replaceAll(' ', '')}`, `#${monthName}${environment.label.replaceAll(' ', '')}`, `#${yearName}${yearImage[0]}`, `#${priority.label.replace(/[()]/g, '')}보완`],
-    readingLabel: '그림부터 읽는 총운',
-    overall: `당신을 가장 가까이 보여 주는 물상은 ${dayName}일주(${coloredAnimal})입니다. ${stemTerm(day.stem)}의 ${dayImage[0]} 물상은 주인공의 색과 자세에, ${BRANCH_KO[day.branch]}의 ${withParticle(animal.animal, '은', '는')} 모습에 담았습니다. 배경은 ${monthName}월의 ${environment.label}을 나타냅니다. ${yearName}년주의 ${yearImage[0]} 물상은 장면 전체에 영향을 주는 원국의 큰 힘으로, ${hourName}시주의 ${ELEMENTS[hourElement].ko} 기운은 가까운 보조 신호로 겹쳤습니다. 개운 이미지에는 ${elementTermWithParticle(priority.element, '을', '를')} 먼저, ${elementTermWithParticle(support.element, '을', '를')} 함께 더해 지금 필요한 방향을 한눈에 떠올리도록 했습니다.`,
-    scene: `${environment.label}의 배경에서 ${withParticle(coloredAnimal, '이', '가')} ${pose.action}, ${elementTermWithParticle(priority.element, '과', '와')} ${elementTermWithParticle(support.element, '을', '를')} 상징하는 빛과 자연의 흐름이 주인공에게 이어지는 장면입니다.`,
+    tags: [`#${dayImage[0].replaceAll(' ', '')}처럼`, `#${coloredAnimal.replaceAll(' ', '')}`, `#${environment.label.replaceAll(' ', '')}`, `#${yearImage[0].replaceAll(' ', '')}의힘`, `#${ELEMENT_PLAIN_NAMES[priority.element].replaceAll(' ', '')}`],
+    readingLabel: '그림으로 읽는 나의 사주',
+    overall: `당신은 ${environment.label}에 서 있는 ${coloredAnimal}입니다. ${dayImage[0]}처럼 자기 방식으로 자라려는 힘이 있고, ${pose.phrase} 모습으로 그 성향을 보여 줍니다. 지금은 ${withParticle(ELEMENT_PLAIN_NAMES[priority.element], '을', '를')} 먼저 챙기고, ${withParticle(ELEMENT_PLAIN_NAMES[support.element], '을', '를')} 함께 더할 때 훨씬 편안하게 힘을 쓸 수 있습니다.`,
+    scene: `${environment.label} 속에서 ${coloredAnimal}이 자기 자리를 지키고 있습니다. 주변의 빛과 자연이 주인공에게 닿는 모습으로 지금 필요한 힘을 보여 줍니다.`,
     protagonist: {
       label: '그림 속의 나',
       term: `${dayName}일주(${coloredAnimal})`,
       visual: `${stemTerm(day.stem)}의 ${dayImage[0]} 물상은 색과 자세에, ${BRANCH_KO[day.branch]}의 ${withParticle(animal.animal, '은', '는')} 주인공의 형태에 담았습니다.`,
+      title: `${dayImage[0]}처럼 자기 길을 가는 ${coloredAnimal}`,
+      body: `이 ${withParticle(coloredAnimal, '이', '가')} 바로 당신입니다. ${dayImage[0]}의 성향을 바탕으로, 익숙한 방식과 자기 속도를 지키며 움직이는 편입니다.`,
+      visualCue: `주인공의 ${ELEMENT_VISUAL_NAMES[dayElement]}빛과 ${pose.phrase} 자세를 보면 당신이 힘을 쓰는 방식을 알 수 있습니다.`,
+      technicalTerm: `${dayName}일주`,
+      previewLayers: [environmentLayer, protagonistLayer],
+      focus: 'protagonist',
+      alt: `${environment.label}에 ${pose.phrase} ${coloredAnimal}`,
     },
     environment: {
       label: '내가 놓인 계절',
       term: `${monthName}월(${environment.label})`,
       visual: `배경의 계절은 실제 출생일 날씨가 아니라 월령의 온도와 습도를 상징합니다.`,
+      title: `내가 출발한 계절, ${environment.label}`,
+      body: `당신은 ${environment.label}의 영향을 크게 받습니다. 같은 능력이 있어도 몸과 마음이 편안해지는 조건을 먼저 갖출 때 훨씬 자연스럽게 움직입니다.`,
+      visualCue: '하늘의 색, 땅의 상태, 빛의 세기를 보면 당신이 놓인 기본 환경을 알 수 있습니다.',
+      technicalTerm: `${monthName}월`,
+      previewLayers: [environmentLayer],
+      focus: 'environment',
+      alt: `${monthName}월을 나타내는 ${environment.label} 풍경`,
     },
     existingStrength: {
-      label: '이미 가진 큰 힘',
+      label: '이미 가진 힘',
       term: `${stemTerm(year.stem)}(${yearImage[0]})`,
       visual: `${yearName}년주의 물상을 멀리서 장면 전체에 영향을 주는 빛과 지형의 힘으로 읽었습니다.`,
+      title: `이미 가지고 있는 ${yearImage[0]}의 힘`,
+      body: `당신에게는 ${yearImage[1]}이 이미 있습니다. 필요할 때 이 힘을 꺼내 쓰면 주변 상황에 끌려가기보다 자기 방향을 다시 잡을 수 있습니다.`,
+      visualCue: '배경 전체에 퍼지는 빛과 자연의 효과가 원래부터 가지고 있는 힘을 보여 줍니다.',
+      technicalTerm: `${yearName}년주`,
+      previewLayers: [environmentLayer, `effects/${yearElement}.png`],
+      focus: 'existing',
+      alt: `${environment.label} 풍경에 더해진 ${yearImage[0]}의 힘`,
     },
     neededFunction: {
-      label: '더 필요한 작용',
+      label: '지금 먼저 필요한 힘',
       term: priority.label,
       visual: `${priority.reason} 개운 이미지에서는 이 작용을 가장 먼저 보이는 자연 효과로 더했습니다.`,
+      title: `지금 먼저 챙길 힘, ${ELEMENT_PLAIN_NAMES[priority.element]}`,
+      body: `지금은 ${withParticle(ELEMENT_PLAIN_NAMES[priority.element], '이', '가')} 가장 필요합니다. 거창하게 바꾸기보다 생활 속에서 이 힘을 자주 쓰면 답답했던 흐름이 한결 부드러워집니다.`,
+      visualCue: `${ELEMENTS[priority.element].ko}의 색과 자연 효과가 주인공 가까이에 닿는 부분을 보세요.`,
+      technicalTerm: priority.label,
+      previewLayers: [environmentLayer, `effects/${priority.element}.png`],
+      focus: 'priority',
+      alt: `${environment.label} 풍경에 나타난 ${ELEMENT_PLAIN_NAMES[priority.element]}`,
     },
     support: {
-      label: '함께 받치는 작용',
+      label: '함께 챙길 힘',
       term: support.label,
       visual: `${support.reason} 주된 보완을 빼앗지 않는 보조 흐름으로 표현했습니다.`,
+      title: `함께 받쳐 줄 힘, ${ELEMENT_PLAIN_NAMES[support.element]}`,
+      body: `${ELEMENT_PLAIN_NAMES[support.element]}도 함께 필요합니다. 먼저 필요한 힘이 오래 유지되도록 옆에서 받쳐 주는 역할을 합니다.`,
+      visualCue: `주인공을 덮지 않고 주변에 이어지는 ${ELEMENTS[support.element].ko}의 색과 움직임을 보세요.`,
+      technicalTerm: support.label,
+      previewLayers: [environmentLayer, `effects/${support.element}.png`],
+      focus: 'support',
+      alt: `${environment.label} 풍경에 더해진 ${ELEMENT_PLAIN_NAMES[support.element]}`,
     },
-    flow: `${priority.label} → ${support.label} → ${dayName} ${animal.animal}로 이어지는 보완 흐름입니다.`,
-    disclaimer: '사전에 검수한 계절·동물·오행 래스터 레이어를 명식 규칙에 따라 조합한 상징 이미지입니다.',
+    flow: `${withParticle(ELEMENT_PLAIN_NAMES[priority.element], '이', '가')} 먼저 길을 열고, ${withParticle(ELEMENT_PLAIN_NAMES[support.element], '이', '가')} 그 힘을 받쳐 줍니다. 그 도움을 받은 ${withParticle(animal.animal, '이', '가')} 자기답게 움직이는 그림입니다.`,
   }
 }
 
@@ -660,54 +730,54 @@ function buildInterpretation(pillars, balance, gender) {
 
   const readings = {
     overall: {
-      title: `${dayStem} 일간, ${day[0]}의 기질을 지녔습니다`,
-      body: `나를 나타내는 일간은 ${dayStem}, 자연에 비유하면 ${day[0]}입니다. 바탕에는 ${day[1]}이 있습니다. 사주 여덟 글자에서는 ${ELEMENTS[dominant].ko}(${ELEMENTS[dominant].hanja}) 기운이 가장 많이 보이고, 십신으로는 ${primaryGroup.label}이 두드러집니다. 쉽게 말해 ${primaryGroup.strength}을 잘 쓰는 편입니다. 이 설명은 운명을 정해 놓는 말이 아니라, 어떤 방식으로 힘을 쓸 때 자연스러운지를 보여 줍니다.`,
-      points: [`타고난 바탕: ${day[1]}`, `잘 쓰는 힘: ${primaryGroup.strength}`, `겉으로 드러나지 않은 오행: ${missingLabel}`],
+      title: `${day[0]}처럼 자기 방향을 만들어 가는 사람입니다`,
+      body: `당신은 ${day[0]}처럼 자기 방식으로 자라고 싶어 하는 사람입니다. ${day[1]}이 기본 성향이고, 특히 ${primaryGroup.strength}을 잘합니다. 다만 잘하는 일을 혼자 오래 끌고 가면 지치기 쉽습니다. 내가 꼭 해야 할 일과 다른 사람에게 맡겨도 되는 일을 나누면 장점이 훨씬 편안하게 살아납니다.`,
+      points: [`내 기본 성향: ${day[1]}`, `내가 잘하는 것: ${primaryGroup.strength}`, `의식해서 챙길 힘: ${missingLabel}`],
     },
     personality: {
-      title: '편안할 때와 힘들 때의 모습이 다릅니다',
-      body: `평소에는 ${day[1]}이 장점으로 나타납니다. 여기에 ${ELEMENTS[dominant].ko} 기운이 힘을 보태므로 ${dominantCopy.strength}도 자연스럽습니다. 다만 일이 몰리거나 마음이 급해지면 같은 장점이 고집이나 부담으로 바뀔 수 있습니다. ${dominantCopy.caution} 사주로 성격을 단정하기보다, 여유가 있을 때와 압박을 받을 때 내가 어떻게 달라지는지 살펴보는 편이 정확합니다.`,
-      points: [`평소의 강점: ${day[1]}`, `힘들 때 살필 점: ${dominantCopy.caution}`, '스스로 물어볼 것: 지금은 더 넓혀야 할까, 먼저 정리해야 할까?'],
+      title: '평소에는 단단하지만, 급해지면 혼자 버티기 쉽습니다',
+      body: `평소의 당신은 ${day[1]}이 자연스럽게 드러납니다. ${dominantCopy.strength}도 강점입니다. 문제는 일이 한꺼번에 몰릴 때입니다. 잘해 내고 싶은 마음 때문에 도움을 늦게 청하거나, 이미 지쳤는데도 계속 버틸 수 있습니다. 그럴수록 더 열심히 하기보다 먼저 순서를 정하고 한 가지씩 끝내는 편이 좋습니다.`,
+      points: [`편안할 때의 강점: ${day[1]}`, `지쳤을 때 살필 점: ${dominantCopy.caution}`, '지금 내게 필요한 것은 더 버티기일까, 잠깐 멈추기일까?'],
     },
     career: {
       title: '직업 이름보다 어떤 일을 맡느냐가 중요합니다',
-      body: `이 사주는 ${primaryGroup.strength}과 ${dominantCopy.strength}을 함께 쓸 때 능력이 잘 드러납니다. 직업 하나를 정답처럼 고르기보다, 실제로 맡을 역할을 보세요. ${careerRoles.slice(0, 4).join('·')}처럼 해야 할 일과 완성 기준이 분명한 분야부터 살펴볼 만합니다. 같은 직업이라도 조직 분위기와 업무 방식에 따라 맞고 안 맞는 정도가 달라집니다. 흥미와 경험, 자격, 근무 조건까지 확인한 뒤 판단하세요.`,
-      points: [`먼저 살펴볼 역할: ${careerRoles.slice(0, 3).join(' · ')}`, `함께 볼 분야: ${careerRoles.slice(3, 6).join(' · ')}`, '직장을 고를 때: 내가 맡을 일과 평가 기준이 분명한가?'],
+      body: `당신은 ${primaryGroup.strength}을 활용하는 일에서 실력이 잘 드러납니다. ${careerRoles.slice(0, 4).join('·')} 분야를 살펴볼 수 있지만, 직업 이름만 보고 고르지는 마세요. 같은 직업도 사람을 많이 상대하는지, 혼자 깊게 파고드는지, 결과 기준이 분명한지에 따라 만족도가 크게 달라집니다. 업무 내용과 조직 분위기를 함께 봐야 오래 다닐 수 있습니다.`,
+      points: [`잘 맞는 역할: ${careerRoles.slice(0, 3).join(' · ')}`, `함께 살펴볼 분야: ${careerRoles.slice(3, 6).join(' · ')}`, '직장을 고를 때는 실제 업무와 평가 기준을 꼭 확인하세요.'],
     },
     wealth: {
       title: wealthCount ? '돈을 버는 힘과 지키는 기준을 따로 세우세요' : '돈 관리는 눈에 보이는 기준을 만드는 것부터 시작합니다',
-      body: wealthCount ? `재물과 현실 성과를 뜻하는 재성이 겉에 ${wealthCount}개 보입니다. 돈과 시간, 사람을 실제 결과로 연결하는 일에 관심이 가기 쉽다는 뜻입니다. 그렇다고 재산이 많아지거나 투자가 성공한다는 보장은 아닙니다. 수입을 늘리는 판단과 지출을 줄이는 판단을 나누세요. 큰돈이 움직일 때는 예산과 기간, 감당할 수 있는 손실부터 적어 보는 편이 좋습니다.` : `겉으로 드러난 재성이 적다고 재물운이 없다는 뜻은 아닙니다. 돈보다 일의 의미나 관계, 전문성을 먼저 생각하는 편일 수 있습니다. 그래서 수입과 지출을 자동으로 기록하고, 큰 결제는 하루 뒤에 다시 보는 것처럼 눈에 보이는 기준을 만드는 일이 중요합니다. 투자와 대출은 사주가 아니라 실제 소득과 부채를 기준으로 판단해야 합니다.`,
-      points: [`겉으로 드러난 재성: ${wealthCount}개`, '해볼 일: 고정비와 생활비, 배움에 쓰는 돈을 나누어 기록하기', '큰돈의 결정: 실제 숫자와 감당할 수 있는 위험부터 확인하기'],
+      body: wealthCount ? `당신은 돈과 시간을 실제 결과로 연결하려는 감각이 있는 편입니다. 다만 기회가 보이면 한꺼번에 여러 선택을 잡을 수 있으니, 버는 계획과 지키는 계획을 따로 세우세요. 월 고정비, 생활비, 저축, 배움에 쓰는 돈을 나누어 두면 마음도 훨씬 가벼워집니다. 큰 투자나 대출은 사주가 아니라 실제 소득과 감당 가능한 손실을 기준으로 결정하세요.` : `당신은 돈 자체보다 일의 의미, 사람과의 관계, 내 실력을 먼저 생각하는 편일 수 있습니다. 그래서 돈 관리는 의지보다 자동화가 잘 맞습니다. 수입이 들어오면 저축과 고정비가 먼저 빠져나가게 하고, 큰 결제는 하루 뒤에 다시 확인하세요. 투자나 대출은 실제 소득과 부채를 기준으로 결정해야 합니다.`,
+      points: ['고정비·생활비·저축을 따로 나누어 관리하기', '큰 결제는 바로 결정하지 말고 하루 뒤 다시 보기', '투자와 대출은 실제 숫자로 판단하기'],
     },
     spouse: {
       title: '좋은 인연은 운보다 생활의 합이 더 중요합니다',
-      body: `전통 명리에서는 ${gender === 'male' ? '재성' : '관성'}을 배우자와의 관계를 살피는 단서로 봅니다. 이 사주에는 그 기운이 겉에 ${spouseCount}개 보입니다. ${spouseCount ? `${spouseGroup.strength}이 연애와 결혼에서도 중요한 기준이 되기 쉽습니다.` : '이 글자가 적다고 인연이 없거나 결혼이 어렵다는 뜻은 아닙니다.'} 상대의 직업이나 만날 시기를 맞히는 것보다, 갈등이 생겼을 때 대화가 되는지, 돈과 집안일을 어떻게 나눌지, 서로의 생활을 존중하는지를 보는 편이 훨씬 중요합니다.`,
-      points: [`배우자 관계를 보는 전통적 단서: ${gender === 'male' ? '재성' : '관성'} ${spouseCount}개`, '꼭 맞춰 볼 것: 애정 표현, 돈, 집안일, 양가 가족의 경계', '사주만으로 결혼이나 이별 시기를 확정하지 않기'],
+      body: `당신은 좋아하는 마음만큼 생활이 잘 맞는지도 중요하게 보는 편입니다. 오래 만날 사람이라면 애정 표현 방식, 돈 쓰는 습관, 집안일 분담, 양가 가족과의 거리를 솔직하게 이야기해 보세요. 갈등이 생겼을 때 피하지 않고 대화할 수 있는 사람인지가 특히 중요합니다. 설렘은 관계를 시작하게 하지만, 서로의 생활을 존중하는 태도가 관계를 오래 지켜 줍니다.`,
+      points: ['사랑을 표현하는 방식이 서로 맞는지 보기', '돈과 집안일을 어떻게 나눌지 미리 이야기하기', '갈등이 생겼을 때 대화가 되는 사람인지 살피기'],
     },
     family: {
       title: '가족을 챙기는 일에도 내 몫의 선이 필요합니다',
-      body: `가족 관계를 사주 몇 글자로 단정할 수는 없습니다. 다만 인성 ${resourceCount}개와 비겁 ${selfCount}개를 함께 보면, 가족 안에서 도움을 주고받는 방식을 돌아볼 수 있습니다. ${resourceCount >= selfCount ? '가족의 조언과 기대를 무겁게 받아들여 내 선택을 설명하는 데 힘을 많이 쓸 수 있습니다.' : '스스로 해결하려는 마음이 강해 힘들어도 도움을 늦게 청할 수 있습니다.'} 가까운 가족일수록 돈과 돌봄, 연락, 책임의 범위를 구체적으로 말해 두는 편이 좋습니다.`,
+      body: `${resourceCount >= selfCount ? '당신은 가족의 기대와 조언을 가볍게 넘기지 못하고, 내 선택을 설명하느라 힘을 많이 쓸 수 있습니다.' : '당신은 가족에게 걱정을 끼치기 싫어서 힘든 일도 혼자 해결하려는 편일 수 있습니다.'} 하지만 가까운 사이라도 모든 책임을 혼자 질 필요는 없습니다. 돈, 돌봄, 연락, 명절과 가족 행사처럼 반복되는 문제는 미리 범위를 정해 두는 것이 좋습니다.`,
       points: ['부모와 가족의 기대 중 내가 할 수 있는 몫만 구분하기', '형제나 친척과 비교하기보다 서로 다른 조건을 인정하기', '죄책감보다 오래 지킬 수 있는 책임을 선택하기'],
     },
     children: {
       title: '가르쳐 주는 것과 기다려 주는 것의 균형이 필요합니다',
-      body: `표현과 가르침을 뜻하는 식상이 겉에 ${outputCount}개 보입니다. 이것으로 자녀의 유무나 수를 판단할 수는 없습니다. 다만 자녀나 학생, 후배를 대하는 방식을 살피는 단서는 됩니다. ${outputCount ? '설명하고 함께 결과를 만드는 데 강점이 있지만, 상대가 직접 해 보고 실수할 시간도 남겨 두는 편이 좋습니다.' : '말로 앞서 가르치기보다 안정된 환경과 한결같은 태도로 보여 주는 방식이 더 편할 수 있습니다.'} 실제 양육과 교육에서는 나이와 발달 단계, 개인차가 먼저입니다.`,
-      points: [`겉으로 드러난 식상: ${outputCount}개`, '지시만 하기보다 선택지와 그 이유를 함께 알려 주기', '자녀의 성취나 건강을 부모 사주로 단정하지 않기'],
+      body: `${outputCount ? '당신은 설명해 주고 함께 결과를 만드는 데 강점이 있습니다.' : '당신은 말로 재촉하기보다 안정된 환경과 한결같은 태도로 보여 주는 방식이 편합니다.'} 자녀나 학생, 후배를 도울 때는 정답을 바로 알려 주기보다 직접 해 보고 실수할 시간을 남겨 주세요. 잘되길 바라는 마음이 앞서면 상대의 속도까지 대신 정해 버릴 수 있습니다.`,
+      points: ['지시보다 선택지와 이유를 함께 알려 주기', '상대가 직접 해 보고 실수할 시간 남겨 두기', '내 기대보다 상대의 나이와 속도를 먼저 보기'],
     },
     study: {
       title: resourceCount ? '이해한 것을 자기 말로 바꿀 때 공부가 오래 남습니다' : '짧게 해 보고 고치는 공부법이 잘 맞습니다',
-      body: `배움과 이해를 뜻하는 인성이 겉에 ${resourceCount}개 보입니다. ${resourceCount ? '자료를 충분히 읽고 전체 맥락을 파악하는 힘이 있습니다. 다만 완전히 이해할 때까지 시작을 미루지 않도록, 정리한 내용을 내놓을 날짜를 먼저 정하는 편이 좋습니다.' : '정보를 오래 읽는 것보다 문제를 풀거나 다른 사람에게 설명하면서 이해를 만드는 방식이 더 잘 맞을 수 있습니다.'} 시험이나 자격 공부에서는 목표 점수와 복습 간격, 틀린 문제를 다시 보는 날짜를 정해 두세요.`,
-      points: [`겉으로 드러난 인성: ${resourceCount}개`, '읽기 → 짧게 요약하기 → 문제에 써 보기 → 말로 설명하기', '일주일마다 결과를 확인하고 다음 계획을 고치기'],
+      body: `${resourceCount ? '당신은 자료를 충분히 읽고 전체 흐름을 이해하는 힘이 있습니다. 다만 완벽히 이해한 뒤 시작하려다 출발이 늦어질 수 있습니다.' : '당신은 오래 읽는 것보다 직접 문제를 풀고, 다른 사람에게 설명하면서 배우는 방식이 잘 맞습니다.'} 공부할 때는 읽기만 하지 말고 짧게 요약한 뒤 바로 문제에 써 보세요. 시험이나 자격 공부는 목표 점수와 복습 날짜를 미리 정하면 훨씬 안정적입니다.`,
+      points: ['읽은 내용을 짧게 자기 말로 바꾸기', '바로 문제에 써 보고 틀린 이유 확인하기', '일주일마다 계획을 현실에 맞게 고치기'],
     },
     relationship: {
       title: '가까운 사이일수록 원하는 것을 말로 알려 주세요',
-      body: `나와 동료를 뜻하는 비겁은 ${selfCount}개, 책임과 규칙을 뜻하는 관성은 ${authorityCount}개입니다. ${selfCount >= authorityCount ? '내 방식과 속도를 존중받을 때 편하지만, 상대도 자기 방식대로 선택할 수 있다는 점을 잊지 않는 편이 좋습니다.' : '약속과 역할을 중요하게 여기지만, 기준을 맞추느라 내 마음을 계속 뒤로 미루지 않도록 주의해야 합니다.'} 상대가 알아주기를 기다리기보다 원하는 도움과 어려운 점, 지금 가능한 범위를 구체적으로 말하세요.`,
+      body: `${selfCount >= authorityCount ? '당신은 내 방식과 속도를 존중받을 때 가장 편합니다. 다만 상대에게도 자기 방식이 있다는 점을 잊지 않는 것이 좋습니다.' : '당신은 약속과 역할을 중요하게 여기지만, 분위기를 맞추느라 내 마음을 뒤로 미룰 수 있습니다.'} 상대가 알아서 눈치채기를 기다리지 말고, 원하는 도움과 어려운 점을 구체적으로 말하세요. 친한 관계일수록 솔직한 기준이 필요합니다.`,
       points: ['감정을 평가하기 전에 실제로 있었던 일부터 말하기', '누가 옳은지보다 다시 맞출 조건을 찾기', '친밀함과 각자의 경계를 함께 지키는 관계인지 살피기'],
     },
     wellbeing: {
       title: '몰입하는 시간과 쉬는 시간을 따로 두세요',
-      body: `인성 ${resourceCount}개와 식상 ${outputCount}개를 비교하면, 받아들이는 시간과 밖으로 표현하는 시간을 어떻게 나눌지 살펴볼 수 있습니다. ${resourceCount > outputCount ? '충분히 알아본 뒤 움직이려는 편이라 준비가 길어질 수 있습니다. 그럴 때는 생각을 더하기보다 잠깐 걷거나 작은 일부터 시작하는 편이 낫습니다.' : '표현과 실행이 빠른 편이라 일정 사이에 아무 결과도 만들지 않는 쉬는 시간을 넣어야 오래 갑니다.'} 이 내용은 질병이나 체질을 진단하는 말이 아닙니다. 불편한 증상은 의료 전문가에게 확인하세요.`,
-      points: ['집중한 뒤에는 일부러 다른 활동으로 전환하기', `겉으로 드러나지 않은 오행: ${missingLabel}`, '증상과 치료는 사주가 아니라 의료 정보와 전문가 판단을 따르기'],
+      body: `${resourceCount > outputCount ? '당신은 충분히 알아본 뒤 움직이고 싶어 해서 준비가 길어질 수 있습니다. 생각이 많아질 때는 정보를 더 찾기보다 잠깐 걷거나 아주 작은 일부터 시작해 보세요.' : '당신은 생각을 바로 말과 행동으로 옮기는 편이라 쉬는 시간을 놓치기 쉽습니다. 일정 사이에 아무 결과도 만들지 않는 시간을 일부러 넣어야 오래 갑니다.'} 몸이 계속 불편하다면 사주 해석보다 의료 전문가의 진료를 먼저 받으세요.`,
+      points: ['집중한 뒤에는 다른 활동으로 몸과 머리 전환하기', '쉬는 시간을 할 일처럼 일정에 넣기', '계속되는 증상은 의료 전문가에게 확인하기'],
     },
   }
 
@@ -817,7 +887,7 @@ export function analyzeBranchSet(entries) {
 }
 
 function relationSentence(relations, branch) {
-  if (!relations.length) return `${branch}와 원국 사이에는 바로 맞물리는 합·충·형·해·파가 없습니다`
+  if (!relations.length) return `${branch}와 내 사주의 글자 사이에는 바로 맞물리는 관계가 없습니다`
   return relations.map(item => `${item.members.join('')} ${item.type}${item.result ? `(${item.result} 기운 가능성)` : ''}`).join(', ')
 }
 
@@ -829,7 +899,7 @@ function fortuneSignals(pillars, ganZhi, gender, contextLabel = '운', extraGanZ
   const mainGroupKey = tenGodGroup(stemGod)
   const branchGroupKey = tenGodGroup(branchGod)
   const spouseGroupKey = gender === 'male' ? 'wealth' : 'authority'
-  const pillarLabels = { year: '원국 년주', month: '원국 월주', day: '원국 일주', time: '원국 시주' }
+  const pillarLabels = { year: '내 사주 첫째 기둥', month: '내 사주 둘째 기둥', day: '내 사주 셋째 기둥', time: '내 사주 넷째 기둥' }
   const natalStems = Object.entries(pillars).map(([key, pillar]) => ({ label: `${pillarLabels[key]} 천간`, value: pillar.stem }))
   const natalBranches = Object.entries(pillars).map(([key, pillar]) => ({ label: `${pillarLabels[key]} 지지`, value: pillar.branch }))
   const extraStems = extraGanZhi.map(item => ({ label: `${item.label} 천간`, value: [...item.ganZhi][0] }))
@@ -865,14 +935,14 @@ function relationGuidance(signal) {
 
 function luckAreas(signal, periodLabel) {
   const spouseText = signal.spouseActive
-    ? `${periodLabel}에는 전통적 배우자 별이 운에서 드러납니다. 만남이나 혼인 자체를 확정하기보다, 관계의 현실 조건과 약속을 구체적으로 점검하기 좋은 시기로 읽습니다.`
-    : `${periodLabel}의 중심 십신은 배우자 별과 직접 겹치지 않습니다. 관계운이 없다는 뜻이 아니라 일·학습·자기 과제가 앞에 놓일 수 있으므로, 가까운 관계를 일정에서 의도적으로 돌보는 편이 좋습니다.`
+    ? `${periodLabel}에는 연애나 배우자 관계를 현실적으로 생각할 일이 많아질 수 있습니다. 마음만 확인하지 말고 연락 방식, 돈, 집안일, 앞으로의 생활 계획을 함께 이야기해 보세요.`
+    : `${periodLabel}에는 연애보다 일이나 공부, 내 생활을 정리하는 일이 앞에 놓이기 쉽습니다. 가까운 관계가 저절로 유지되기를 기다리지 말고, 함께 보낼 시간을 일정에 먼저 넣어 두세요.`
   return {
-    career: `${signal.stemGod}과 ${signal.branchGod}의 조합은 ${signal.mainGroup.strength}을 일에서 요구합니다. 새 역할은 직함보다 책임 범위, 평가 기준, 협업 구조를 확인하고 선택해야 이 운의 장점을 실제 경력으로 연결할 수 있습니다.`,
-    wealth: `${periodLabel}의 재물 흐름은 ${signal.mainGroupKey === 'wealth' || signal.branchGroupKey === 'wealth' ? '성과와 자원 관리가 전면에 놓이는 편' : '주된 활동을 재무 결과로 바꾸는 별도 장치가 필요한 편'}입니다. 수입·지출·부채·비상금을 분리하고, 큰 계약과 투자는 사주보다 실제 숫자와 전문가 검토를 우선해야 합니다.`,
+    career: `${periodLabel}에는 ${signal.mainGroup.strength}이 일에서 중요해집니다. 새 역할을 제안받으면 이름이나 직함보다 실제로 맡을 일, 책임 범위, 평가 기준을 먼저 확인하세요.`,
+    wealth: `${periodLabel}에는 ${signal.mainGroupKey === 'wealth' || signal.branchGroupKey === 'wealth' ? '돈과 시간을 성과로 연결하는 일이 많아질 수 있습니다' : '열심히 한 일을 실제 수입으로 연결하는 계획이 필요합니다'}. 수입과 지출, 비상금을 따로 관리하고 큰 계약과 투자는 실제 숫자를 확인한 뒤 결정하세요.`,
     spouse: spouseText,
-    relationship: `${signal.relation}. ${relationGuidance(signal)} 이 시기에는 기대, 역할, 연락, 돈의 경계를 말로 확인해야 오해를 줄일 수 있습니다.`,
-    wellbeing: `${signal.mainGroup.caution} 일정이 몰릴 때 수면·식사·활동 기록으로 자신의 리듬을 확인하세요. 이 풀이는 질병을 예측하거나 진단하지 않으며, 지속되는 증상은 의료 전문가의 평가를 따라야 합니다.`,
+    relationship: `사람들과 함께할 일이 늘수록 서로 기대하는 역할이 달라질 수 있습니다. 연락 횟수, 돈, 책임 범위를 말로 확인해야 오해를 줄일 수 있습니다.`,
+    wellbeing: `${signal.mainGroup.caution} 일정이 몰릴 때는 수면과 식사 시간을 먼저 지키세요. 몸의 불편이 계속되면 사주 해석보다 의료 전문가의 진료를 우선해야 합니다.`,
   }
 }
 
@@ -880,8 +950,8 @@ function buildCycleReading(pillars, ganZhi, startYear, endYear, gender) {
   const signal = fortuneSignals(pillars, ganZhi, gender, '대운')
   const periodLabel = `${startYear}~${endYear}년 ${ganZhi} 대운`
   return {
-    title: `앞으로 10년은 ${signal.mainGroup.label}을 배우는 때입니다`,
-    body: `${periodLabel}을 일간과 견주면, 천간 ${signal.stem}은 ${signal.stemGod}, 지지 ${signal.branch}의 중심 기운은 ${signal.branchGod}이 됩니다. 십이운성은 ${signal.twelveStage}입니다. 이는 ${signal.twelveStageMeaning}라는 뜻입니다. 이 10년에는 ${signal.mainGroup.strength}과 ${signal.branchGroup.strength}이 자주 요구될 수 있습니다. 원국과의 관계를 보면 ${signal.relation}. 특정 사건이 반드시 생긴다는 뜻은 아닙니다. 비슷한 선택 앞에 섰을 때 무엇을 먼저 살펴야 하는지를 알려 주는 참고로 보세요.`,
+    title: `앞으로 10년, ${signal.mainGroup.strength}이 중요해집니다`,
+    body: `${startYear}년부터 ${endYear}년까지는 ${signal.mainGroup.strength}과 ${signal.branchGroup.strength}을 자주 요구받는 시기입니다. 전체 흐름은 ${signal.twelveStageMeaning}입니다. 일을 무작정 늘리기보다 지금 끝낼 것과 새로 시작할 것을 나누세요. 중요한 선택 앞에서는 다른 사람의 기대에 끌려가기보다 내가 감당할 시간과 돈, 책임의 범위를 먼저 확인하는 편이 좋습니다.`,
     signals: [`천간 ${signal.stem} · ${signal.stemGod}`, `지지 ${signal.branch} · ${signal.branchGod}`, `십이운성 · ${signal.twelveStage}`, signal.relation],
     evidence: { twelveStage: signal.twelveStage, twelveStageMeaning: signal.twelveStageMeaning, stemRelations: signal.stemRelations, branchRelations: signal.branchRelations },
     areas: luckAreas(signal, periodLabel),
@@ -892,12 +962,12 @@ function buildAnnualReading(pillars, cycleGanZhi, year, age, ganZhi, gender) {
   const signal = fortuneSignals(pillars, ganZhi, gender, '세운', [{ label: '대운', ganZhi: cycleGanZhi }])
   const cycleSignal = fortuneSignals(pillars, cycleGanZhi, gender, '대운')
   const cycleLink = signal.mainGroupKey === cycleSignal.mainGroupKey
-    ? `대운과 세운이 모두 ${signal.mainGroup.label}을 강조해 같은 주제가 반복될 수 있습니다.`
-    : `대운의 ${cycleSignal.mainGroup.label} 위에 세운의 ${signal.mainGroup.label}이 더해져 두 과제를 함께 조율해야 합니다.`
+    ? `10년의 큰 흐름과 올해의 흐름이 같아서, ${signal.mainGroup.strength}이 더 중요하게 느껴질 수 있습니다.`
+    : `10년 동안 이어지는 ${cycleSignal.mainGroup.strength} 위에 올해의 ${signal.mainGroup.strength}이 더해집니다.`
   const periodLabel = `${year}년 ${ganZhi} 세운`
   return {
-    title: `${year}년, ${signal.mainGroup.label}이 눈앞의 과제로 들어옵니다`,
-    summary: `${periodLabel}의 천간은 ${signal.stemGod}, 지지의 중심 기운은 ${signal.branchGod}입니다. 십이운성은 ${signal.twelveStage}으로, ${signal.twelveStageMeaning}라는 뜻입니다. ${cycleLink} 원국과의 관계를 보면 ${signal.relation}. 이 말은 사건을 예언하는 것이 아니라, 그해 중요한 결정을 내릴 때 무엇을 한 번 더 확인해야 하는지 알려 주는 참고입니다.`,
+    title: `${year}년, ${signal.mainGroup.strength}에 집중할 때입니다`,
+    summary: `${year}년의 전체 흐름은 ${signal.twelveStageMeaning}입니다. ${cycleLink} 여러 일을 한꺼번에 잡기보다 올해 꼭 남기고 싶은 결과를 먼저 정하세요. 중요한 결정을 내릴 때는 마음이 급한지, 실제 시간과 돈이 충분한지 한 번 더 확인하는 편이 좋습니다.`,
     signals: [`나이 ${age}세`, `세운 ${ganZhi}`, `대운 ${cycleGanZhi}`, `십이운성 ${signal.twelveStage}`, `${signal.stemGod}·${signal.branchGod}`],
     evidence: { twelveStage: signal.twelveStage, twelveStageMeaning: signal.twelveStageMeaning, stemRelations: signal.stemRelations, branchRelations: signal.branchRelations },
     areas: luckAreas(signal, periodLabel),

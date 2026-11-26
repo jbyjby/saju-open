@@ -15,7 +15,17 @@ import {
   getLuckImageGuidance,
   getSajuVisualProfile,
   trueSolarTime,
+  withParticle,
 } from '../src/saju.js'
+
+describe('쉬운 오행 이름의 조사 결합', () => {
+  it('받침이 없는 나무에도 이/가와 과/와를 자연스럽게 붙인다', () => {
+    expect(withParticle('힘차게 자라는 나무', '이', '가')).toBe('힘차게 자라는 나무가')
+    expect(withParticle('힘차게 자라는 나무', '과', '와')).toBe('힘차게 자라는 나무와')
+    expect(withParticle('따뜻하게 데우는 불', '이', '가')).toBe('따뜻하게 데우는 불이')
+    expect(withParticle('차분하게 흐르는 물', '과', '와')).toBe('차분하게 흐르는 물과')
+  })
+})
 
 describe('trueSolarTime', () => {
   it('서울 경도 보정으로 입력 시각에서 32분을 뺀다', () => {
@@ -284,15 +294,16 @@ describe('해석 규칙', () => {
     expect(summerProfile.protagonist.term).toContain('계유일주')
     expect(summerProfile.protagonist.term).toContain('수탉')
     expect(summerProfile.protagonist.visual).toContain('계수(水)')
-    expect(summerProfile.overall).toContain('수탉은 모습')
-    expect(summerProfile.overall).not.toContain('수탉는')
+    expect(summerProfile.overall).toMatch(/^당신은 빛이 짙어지는 초여름에 서 있는 물빛 수탉입니다\./)
+    expect(summerProfile.overall).toContain('힘차게 자라는 나무를 함께')
     expect(summerProfile.characterPose).toBe('front')
     expect(summerProfile.characterFacing).toBe('front')
-    expect(summerProfile.scene).toContain('물빛 수탉이 정면으로 당당히 서 있고')
+    expect(summerProfile.scene).toContain('물빛 수탉이 자기 자리를 지키고 있습니다')
     expect(summerProfile.environment.term).toContain('계사월')
     expect(summerProfile.neededFunction.term).toContain('금(金)')
     expect(summerProfile.support.term).toContain('목(木)')
     expect(summerProfile.tags).toHaveLength(5)
+    expect(summerProfile.tags.join(' ')).not.toMatch(/일주|보완|[甲乙丙丁戊己庚辛壬癸]/)
 
     const winterHorse = calculateSaju({
       calendar: 'solar', year: 2000, month: 1, day: 1,
@@ -307,10 +318,8 @@ describe('해석 규칙', () => {
     expect(winterProfile.characterPose).toBe('upright')
     expect(winterProfile.characterFacing).toBe('right')
     expect(winterProfile.protagonist.term).toContain('말')
-    expect(winterProfile.overall).toContain('화(火)를 먼저')
-    expect(winterProfile.overall).not.toContain('화(火)을')
-    expect(winterProfile.scene).toContain('화(火)와 목(木)을')
-    expect(winterProfile.scene).not.toContain('화(火)과')
+    expect(winterProfile.overall).toContain('따뜻하게 데우는 불을 먼저')
+    expect(winterProfile.overall).toContain('힘차게 자라는 나무를 함께')
   })
 
   it('예시 명식을 원국 물상과 필요한 작용으로 분리한다', () => {
@@ -340,20 +349,34 @@ describe('해석 규칙', () => {
         'layer-05-blue-dog-luck.png',
       ],
     })
-    expect(profile.natalLabel).toBe('내 사주 원국 물상 이미지')
+    expect(profile.natalLabel).toBe('그림으로 만나는 나의 사주')
     expect(profile.luckLabel).toBe('나만의 개운 이미지')
     expect(profile.luckTitle).toBe('따뜻한 온기와 맑은 물을 받아 힘을 얻는 푸른 개')
     expect(profile.title).toBe('차가운 늦겨울, 따뜻한 빛과 맑은 물을 받는 푸른 개')
-    expect(profile.tags).toEqual(['#큰나무의기상', '#갑술푸른개', '#신축늦겨울', '#병화태양', '#계수맑은물'])
-    expect(profile.readingLabel).toBe('그림부터 읽는 총운')
-    expect(profile.protagonist.term).toBe('갑술일주(푸른 개)')
-    expect(profile.protagonist.visual).toContain('갑목(곧게 자라는 큰 나무)')
-    expect(profile.overall).toContain('술토(불씨를 품은 늦가을의 마른 땅)')
-    expect(profile.overall).toContain('신축월(차갑고 습한 늦겨울)')
-    expect(profile.existingStrength.term).toBe('병화(태양)')
-    expect(profile.neededFunction.term).toBe('정화(가까이 머무는 온기)')
-    expect(profile.support.term).toBe('계수(이슬과 맑은 물)')
-    expect(profile.flow).toContain('유금 → 계수 → 갑목')
+    expect(profile.tags).toEqual(['#큰나무처럼곧게', '#차가운늦겨울', '#겨울태양', '#맑은물', '#가까운온기'])
+    expect(profile.readingLabel).toBe('그림으로 읽는 나의 사주')
+    expect(profile.overall).toMatch(/^당신은 차가운 겨울 땅에 서 있는 푸른 개입니다\./)
+    expect(profile.overall).not.toMatch(/물상|원국|월령|조후|생조|검수/)
+    expect(profile.tags).toEqual(['#큰나무처럼곧게', '#차가운늦겨울', '#겨울태양', '#맑은물', '#가까운온기'])
+    expect(profile.protagonist.title).toBe('큰 나무처럼 곧게 선 푸른 개')
+    expect(profile.protagonist.body).toContain('이 푸른 개가 바로 당신입니다')
+    expect(profile.protagonist.technicalTerm).toBe('갑술일주')
+    expect(profile.protagonist.previewLayers).toEqual([
+      'layer-01-environment-base.jpg',
+      'layer-04-blue-dog-base.png',
+    ])
+    expect(profile.environment.title).toBe('차갑고 습한 늦겨울 땅')
+    expect(profile.existingStrength.title).toBe('겨울에도 크게 빛나는 태양')
+    expect(profile.neededFunction.title).toBe('멀리 비추는 빛보다 가까이 머무는 온기')
+    expect(profile.support.title).toBe('얼지 않고 흐르는 맑은 물')
+    for (const symbol of [profile.protagonist, profile.environment, profile.existingStrength, profile.support, profile.neededFunction]) {
+      expect(symbol.body.length).toBeGreaterThan(30)
+      expect(symbol.visualCue.length).toBeGreaterThan(20)
+      expect(symbol.previewLayers.length).toBeGreaterThan(0)
+      expect(symbol.alt.length).toBeGreaterThan(10)
+    }
+    expect(profile.flow).toContain('태양')
+    expect(profile.flow).toContain('맑은 물')
   })
 
   it('개운 이미지가 필요한 이유를 강점과 보완 행동으로 설명한다', () => {
@@ -409,8 +432,9 @@ describe('해석 규칙', () => {
       .toEqual(expect.arrayContaining([expect.objectContaining({ type: '육충', members: ['子', '午'] })]))
     expect(result.luckCycles[0].annualYears[0].reading.evidence.branchRelations
       .some(item => item.members.join('') === '巳巳')).toBe(false)
-    expect(result.luckCycles[0].annualYears[0].reading.areas.relationship).toContain('압박')
-    expect(result.luckCycles[0].annualYears[0].reading.areas.relationship).toContain('어긋남')
+    expect(result.luckCycles[0].reading.body).not.toMatch(/원국|일간|천간|지지|십이운성/)
+    expect(result.luckCycles[0].annualYears[0].reading.summary).not.toMatch(/원국|일간|천간|지지|십이운성/)
+    expect(result.luckCycles[0].annualYears[0].reading.areas.relationship).toContain('말로 확인')
     for (const cycle of result.luckCycles) {
       expect(cycle.reading.body.length).toBeGreaterThan(120)
       expect(Object.keys(cycle.reading.areas)).toEqual(['career', 'wealth', 'spouse', 'relationship', 'wellbeing'])
